@@ -14,6 +14,11 @@ import {Ronin} from './Ronin.js'
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
  */
 
+const Arriba = 0;
+const Izquierda = 1;
+const Abajo = 2;
+const Derecha = 3;
+
 class MyScene extends THREE.Scene {
   constructor (myCanvas) {
     super();
@@ -50,8 +55,24 @@ class MyScene extends THREE.Scene {
     this.add(this.ronin);
     // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
+
+    window.addEventListener('keydown', (event) => this.moverPersonaje(event));
   }
   
+  moverPersonaje(tecla){
+    if (tecla.key == "w") {
+      this.ronin.mover(Arriba);
+    }
+    if (tecla.key == "s") {
+      this.ronin.mover(Abajo);
+    }
+    if (tecla.key == "a") {
+      this.ronin.mover(Izquierda);
+    }
+    if (tecla.key == "d") {
+      this.ronin.mover(Derecha);
+    }
+  }
 
   initStats() {
   
