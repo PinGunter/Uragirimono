@@ -7,7 +7,7 @@ import { TrackballControls } from '../libs/TrackballControls.js'
 import { Stats } from '../libs/stats.module.js'
 
 // Clases de mi proyecto
-import {MyBox} from './MyBox.js'
+import {Ronin} from './Ronin.js'
  
 /// La clase fachada del modelo
 /**
@@ -20,6 +20,7 @@ class MyScene extends THREE.Scene {
     
     // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
     this.renderer = this.createRenderer(myCanvas);
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
     
     // Se añade a la gui los controles para manipular los elementos de esta clase
     this.gui = this.createGUI ();
@@ -44,19 +45,14 @@ class MyScene extends THREE.Scene {
     
     
     // Por último creamos el modelo.
-    this.caja = new MyBox(this.gui, "Caja 1", new THREE.Color(Math.random(), Math.random(), Math.random()));
-    this.add(this.caja);
 
-
-    const depthTexture = new THREE.DepthTexture();  
-    const renderTarget =  new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-      depthTexture: depthTexture,
-      depthBuffer: true,
-    });
+    this.ronin = new Ronin(this.gui);
+    this.add(this.ronin);
     // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
   }
   
+
   initStats() {
   
     var stats = new Stats();
@@ -101,24 +97,8 @@ class MyScene extends THREE.Scene {
   }
   
   createGround () {
-    // El suelo es un Mesh, necesita una geometría y un material.
-    
-    // La geometría es una caja con muy poca altura
-    var geometryGround = new THREE.BoxGeometry (150,0.2,150);
-    
-    // El material se hará con una textura de madera
-    var texture = new THREE.TextureLoader().load('../imgs/cuadrados.jpg');
-    var materialGround = new THREE.MeshPhongMaterial ({map: texture});
-    
-    // Ya se puede construir el Mesh
-    var ground = new THREE.Mesh (geometryGround, materialGround);
-    
-    // Todas las figuras se crean centradas en el origen.
-    // El suelo lo bajamos la mitad de su altura para que el origen del mundo se quede en su lado superior
-    ground.position.y = -0.1;
-    
-    // Que no se nos olvide añadirlo a la escena, que en este caso es  this
-    this.add (ground);
+    var gridHelper = new THREE.GridHelper(100,10);
+    this.add(gridHelper);
   }
   
   createGUI () {
@@ -228,7 +208,7 @@ class MyScene extends THREE.Scene {
     this.cameraControl.update();
     
     // Se actualiza el resto del modelo    
-    this.caja.update();
+    this.ronin.update();
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
 
