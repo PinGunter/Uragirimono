@@ -16,18 +16,31 @@ class Ronin extends THREE.Object3D {
         this.loader = new GLTFLoader();
         this.gui = gui;
         this.altura = 10;
-        this.puntero = new THREE.Mesh(
-            new THREE.SphereGeometry(),
-            new THREE.MeshToonMaterial({color: 0xff12de})
+
+        this.materialRojo = new THREE.MeshToonMaterial({color:"red",opacity: 0.5, transparent: true });
+        this.materialAmarillo = new THREE.MeshToonMaterial({color:"yellow",opacity: 0.5, transparent: true });
+        this.area = new THREE.Mesh(
+            new THREE.TorusGeometry(5, 0.5, 16, 100),
+            this.materialAmarillo
         );
+        this.area.rotateX(Math.PI / 2);
+        this.ronin = new THREE.Object3D();
+        this.ronin.add(this.area);
+
+        this.puntero = new THREE.Mesh(
+            new THREE.TorusGeometry(1, 0.2, 16, 100),
+            new THREE.MeshToonMaterial({ color: 0xff12de })
+        );
+        this.puntero.rotateX(Math.PI / 2);
         this.add(this.puntero);
 
         // datos movimientos
+        this.ultimaDireccion = new THREE.Vector3();
         this.direccion = new THREE.Vector3();
         this.anguloRotacion = new THREE.Vector3(0, 1, 0);
         this.quaternonRotacion = new THREE.Quaternion();
         this.objCamara = new THREE.Vector3();
-        this.velocidadMovimiento = 5;
+        this.velocidadMovimiento = 30;
         this.velocidadTrans = 0.2;
     }
 
@@ -45,13 +58,14 @@ class Ronin extends THREE.Object3D {
             function (gltf) {
                 that.model = gltf.scene;
                 that.model.scale.set(0.05, 0.05, 0.05);
-                that.model.position.set(0, that.altura/2, 0); // mide 10 de altura
+                that.model.position.set(0, that.altura / 2, 0); // mide 10 de altura
 
                 that.model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
 
                 var animations = gltf.animations;
 
-                that.add(that.model);
+                that.ronin.add(that.model);
+                that.add(that.ronin);
 
                 that.createActions(that.model, animations);
 
@@ -59,7 +73,7 @@ class Ronin extends THREE.Object3D {
 
             },
             function (xhr) {
-                document.getElementById("info").innerHTML = "Cargando: " + (xhr.loaded / 14301468 * 100) + "%";
+                document.getElementById("info").innerHTML = "Cargando: " + (xhr.loaded / 14747348 * 100) + "%";
             },
             function (error) {
 
@@ -141,40 +155,42 @@ class Ronin extends THREE.Object3D {
     // }
 
 
-    fadeToAction(name) {
+    fadeToAction(name, sentido = 1) {
         const toPlay = this.actions[name];
         const current = this.actions[this.estado];
         current.fadeOut(this.velocidadTrans);
+        toPlay.setEffectiveTimeScale(sentido);
+        toPlay.setLoop(THREE.Repeat);
         toPlay.reset().fadeIn(this.velocidadTrans).play();
         this.estado = name;
     }
 
     calcularOffsetDireccion(teclasPulsadas) {
-        var direccionOffset = 0;
+        this.direccionOffset = 0;
 
         if (teclasPulsadas["w"]) {
             if (teclasPulsadas["a"]) {
-                direccionOffset = Math.PI / 4;
+                this.direccionOffset = Math.PI / 4;
             } else if (teclasPulsadas["d"]) {
-                direccionOffset = -Math.PI / 4;
+                this.direccionOffset = -Math.PI / 4;
             }
         } else if (teclasPulsadas["s"]) {
             if (teclasPulsadas["a"]) {
-                direccionOffset = Math.PI / 4 + Math.PI / 2;
+                this.direccionOffset = Math.PI / 4 + Math.PI / 2;
             } else if (teclasPulsadas["d"]) {
-                direccionOffset = -Math.PI / 4 - Math.PI / 2;
+                this.direccionOffset = -Math.PI / 4 - Math.PI / 2;
             } else {
-                direccionOffset = Math.PI;
+                this.direccionOffset = Math.PI;
             }
         } else if (teclasPulsadas["a"]) {
-            direccionOffset = Math.PI / 2;
+            this.direccionOffset = Math.PI / 2;
         } else if (teclasPulsadas["d"]) {
-            direccionOffset = -Math.PI / 2;
+            this.direccionOffset = -Math.PI / 2;
         }
-        return direccionOffset;
+        return this.direccionOffset;
     }
 
-    rotarHaciaPuntero(evento, camara){
+    rotarHaciaPuntero(evento, camara) {
         var mouse = new THREE.Vector2();
         mouse.x = (evento.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(evento.clientY / window.innerHeight) * 2 + 1;
@@ -183,34 +199,65 @@ class Ronin extends THREE.Object3D {
         var puntoInterseccion = new THREE.Vector3();
         raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0)), puntoInterseccion);
         this.puntero.position.copy(new THREE.Vector3(puntoInterseccion.x, this.altura, puntoInterseccion.z));
-        this.model.lookAt(this.puntero.position.x, this.altura, this.puntero.position.z);
+        this.ultimaDireccion.x = this.puntero.position.x;
+        this.ultimaDireccion.y = this.altura;
+        this.ultimaDireccion.z = this.puntero.position.z;
+        
+        this.ronin.rotation.y = Math.atan2( ( this.puntero.position.x - this.ronin.position.x ), ( this.puntero.position.z - this.ronin.position.z ) );
     }
 
-    update(teclasPulsadas) {
+
+    moverPersonaje(teclasPulsadas, camara){
+        this.calcularOffsetDireccion(teclasPulsadas);
+        camara.getWorldDirection(this.direccion);
+        this.direccion.y = 0;
+        this.direccion.normalize();
+        this.direccion.applyAxisAngle(this.anguloRotacion, this.direccionOffset);
+        var delta = this.clock.getDelta();
+        var moveX = this.direccion.x * this.velocidadMovimiento *delta;
+        var moveZ = this.direccion.z * this.velocidadMovimiento * delta;
+        this.ronin.position.x += moveX;
+        this.ronin.position.z += moveZ;
+    }
+
+    update(teclasPulsadas, camara) {
         var direccion = false;
         for (const [key, value] of Object.entries(teclasPulsadas)) {
-            if (key === "w" || key === "s" || key === "a" || key === "d") { 
+            if (key === "w" || key === "s" || key === "a" || key === "d") {
                 direccion = direccion || value;
             }
         }
 
         var accion = "";
-
+        var sentido = 1;
         if (direccion) {
-            accion = "correr";
+            this.area.material = this.materialRojo;
+            if (teclasPulsadas["w"]) {
+                accion = "correr"
+            }else if (teclasPulsadas["s"]) {
+                accion = "correrAtras";
+            }else if (teclasPulsadas["a"]){
+                accion = "strafe";
+            } else if (teclasPulsadas["d"]){
+                accion = "strafe";
+                sentido = -1;
+            }
         } else {
+            this.area.material = this.materialAmarillo;
+            sentido = 1;
             accion = "idle";
         }
-
         if (this.estado != accion) {
-            this.fadeToAction(accion);
+            this.fadeToAction(accion, sentido);
         }
 
         // Hay que pedirle al mixer que actualice las animaciones que controla
         var dt = this.clock.getDelta();
         if (this.mixer) this.mixer.update(dt);
 
-        
+        if (accion == "correr")
+        this.moverPersonaje(teclasPulsadas, camara);
+
     }
 
 }

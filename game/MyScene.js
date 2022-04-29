@@ -59,10 +59,11 @@ class MyScene extends THREE.Scene {
 
     window.addEventListener('keyup', (event) => {
       this.teclasPulsadas[event.key] = false;
+
     }, false);
 
     window.addEventListener('mousemove', (event) => {
-      this.ronin.rotarHaciaPuntero(event, this.camera);
+      this.ronin.rotarHaciaPuntero(event, this.camera, this.teclasPulsadas);
     })
   }
 
@@ -221,7 +222,7 @@ class MyScene extends THREE.Scene {
     this.cameraControl.update();
     
     // Se actualiza el resto del modelo    
-    this.ronin.update(this.teclasPulsadas);
+    this.ronin.update(this.teclasPulsadas, this.camera);
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
