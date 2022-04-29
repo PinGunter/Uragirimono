@@ -13,14 +13,42 @@ class Ronin extends THREE.Object3D {
         super();
         this.estado = "idle";
         this.clock = new THREE.Clock();
+        this.loader = new GLTFLoader();
+        this.gui = gui;
+        this.altura = 10;
+        this.puntero = new THREE.Mesh(
+            new THREE.SphereGeometry(),
+            new THREE.MeshToonMaterial({color: 0xff12de})
+        );
+        this.add(this.puntero);
+
+        // datos movimientos
+        this.direccion = new THREE.Vector3();
+        this.anguloRotacion = new THREE.Vector3(0, 1, 0);
+        this.quaternonRotacion = new THREE.Quaternion();
+        this.objCamara = new THREE.Vector3();
+        this.velocidadMovimiento = 5;
+        this.velocidadTrans = 0.2;
+    }
+
+    waitLoader(url) {
         var that = this;
-        var loader = new GLTFLoader();
-        loader.load(
+        return new Promise((resolve, reject) => {
+            that.loadModel();
+        });
+    }
+
+    loadModel() {
+        var that = this;
+        this.loader.load(
             "../models/gltf/ronin.glb",
             function (gltf) {
                 that.model = gltf.scene;
                 that.model.scale.set(0.05, 0.05, 0.05);
-                that.model.position.set(0, 5, 0); // mide 10 de altura
+                that.model.position.set(0, that.altura/2, 0); // mide 10 de altura
+
+                that.model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
+
                 var animations = gltf.animations;
 
                 that.add(that.model);
@@ -28,8 +56,6 @@ class Ronin extends THREE.Object3D {
                 that.createActions(that.model, animations);
 
                 that.fadeToAction("idle", true, 1.0); // animacion inicials
-
-                that.createGUI(gui, "Ronin");
 
             },
             function (xhr) {
@@ -41,7 +67,6 @@ class Ronin extends THREE.Object3D {
 
             }
         );
-
     }
 
     // ******* ******* ******* ******* ******* ******* ******* 
@@ -84,100 +109,108 @@ class Ronin extends THREE.Object3D {
 
     }
 
-    createGUI(gui, str) {
-        // La interfaz de usuario se crea a partir de la propia información que se ha
-        // cargado desde el archivo  gltf
-        this.guiControls = {
-            // En este campo estará la list de animaciones del archivo
-            current: 'Animaciones',
-            // Este campo nos permite ver cada animación una sola vez o repetidamente
-            repeat: false,
-            // Velocidad de la animación
-            speed: 1.0
-        }
+    // createGUI(gui, str) {
+    //     // La interfaz de usuario se crea a partir de la propia información que se ha
+    //     // cargado desde el archivo  gltf
+    //     this.guiControls = {
+    //         // En este campo estará la list de animaciones del archivo
+    //         current: 'Animaciones',
+    //         // Este campo nos permite ver cada animación una sola vez o repetidamente
+    //         repeat: false,
+    //         // Velocidad de la animación
+    //         speed: 1.0
+    //     }
 
-        // Creamos y añadimos los controles de la interfaz de usuario
-        var folder = gui.addFolder(str);
-        var repeatCtrl = folder.add(this.guiControls, 'repeat').name('Repetitivo: ');
-        var clipCtrl = folder.add(this.guiControls, 'current').options(this.clipNames).name('Animaciones: ');
-        var speedCtrl = folder.add(this.guiControls, 'speed', -2.0, 2.0, 0.1).name('Speed: ');
-        //     var that = this;
-        // Cada vez que uno de los controles de la interfaz de usuario cambie, 
-        //    llamamos al método que lance la animación elegida
-        clipCtrl.onChange(() => {
-            this.fadeToAction(this.guiControls.current, this.guiControls.repeat, this.guiControls.speed);
-        });
-        repeatCtrl.onChange(() => {
-            this.fadeToAction(this.guiControls.current, this.guiControls.repeat, this.guiControls.speed);
-        });
-        speedCtrl.onChange((value) => {
-            this.activeAction.setEffectiveTimeScale(this.guiControls.speed);
-        });
+    //     // Creamos y añadimos los controles de la interfaz de usuario
+    //     var folder = gui.addFolder(str);
+    //     var repeatCtrl = folder.add(this.guiControls, 'repeat').name('Repetitivo: ');
+    //     var clipCtrl = folder.add(this.guiControls, 'current').options(this.clipNames).name('Animaciones: ');
+    //     var speedCtrl = folder.add(this.guiControls, 'speed', -2.0, 2.0, 0.1).name('Speed: ');
+    //     //     var that = this;
+    //     // Cada vez que uno de los controles de la interfaz de usuario cambie, 
+    //     //    llamamos al método que lance la animación elegida
+    //     clipCtrl.onChange(() => {
+    //         this.fadeToAction(this.guiControls.current, this.guiControls.repeat, this.guiControls.speed);
+    //     });
+    //     repeatCtrl.onChange(() => {
+    //         this.fadeToAction(this.guiControls.current, this.guiControls.repeat, this.guiControls.speed);
+    //     });
+    //     speedCtrl.onChange((value) => {
+    //         this.activeAction.setEffectiveTimeScale(this.guiControls.speed);
+    //     });
+    // }
+
+
+    fadeToAction(name) {
+        const toPlay = this.actions[name];
+        const current = this.actions[this.estado];
+        current.fadeOut(this.velocidadTrans);
+        toPlay.reset().fadeIn(this.velocidadTrans).play();
+        this.estado = name;
     }
 
-    // ******* ******* ******* ******* ******* ******* ******* 
+    calcularOffsetDireccion(teclasPulsadas) {
+        var direccionOffset = 0;
 
-    // Método para lanzar una animación
-    // Recibe:
-    //  - name   : el nombre de la animación
-    //  - repeat : si se desea una sola ejecución de la animación (false) o repetidamente (true)
-    //  - speed  : la velocidad a la que se moverá la animación (negativo hacia atrás, 0 parado)
-    fadeToAction(name, repeat, speed) {
-        // referenciamos la animación antigua y la nueva actual
-        var previousAction = this.activeAction;
-        this.activeAction = this.actions[name];
+        if (teclasPulsadas["w"]) {
+            if (teclasPulsadas["a"]) {
+                direccionOffset = Math.PI / 4;
+            } else if (teclasPulsadas["d"]) {
+                direccionOffset = -Math.PI / 4;
+            }
+        } else if (teclasPulsadas["s"]) {
+            if (teclasPulsadas["a"]) {
+                direccionOffset = Math.PI / 4 + Math.PI / 2;
+            } else if (teclasPulsadas["d"]) {
+                direccionOffset = -Math.PI / 4 - Math.PI / 2;
+            } else {
+                direccionOffset = Math.PI;
+            }
+        } else if (teclasPulsadas["a"]) {
+            direccionOffset = Math.PI / 2;
+        } else if (teclasPulsadas["d"]) {
+            direccionOffset = -Math.PI / 2;
+        }
+        return direccionOffset;
+    }
 
-        // La nueva animación se resetea para eliminar cualquier rastro de la última vez que se ejecutara
-        this.activeAction.reset();
-        // Se programa una transición entre la animación actigua y la nueva, se emplea un 10% de lo que dura la animación nueva
-        this.activeAction.crossFadeFrom(previousAction, this.activeAction.time / 10)
-        // Hacemos que la animación se quede en su último frame cuando acabe
-        this.activeAction.clampWhenFinished = true;
-        // Ajustamos su factor de tiempo, modificando ese valor se puede ajustar la velocidad de esta ejecución de la animación
-        this.activeAction.setEffectiveTimeScale(speed);
-        // Ajustamos su peso al máximo, ya que queremos ver la animación en su plenitud
-        this.activeAction.setEffectiveWeight(1);
-        // Se establece el número de repeticiones
-        if (repeat) {
-            this.activeAction.setLoop(THREE.Repeat);
+    rotarHaciaPuntero(evento, camara){
+        var mouse = new THREE.Vector2();
+        mouse.x = (evento.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(evento.clientY / window.innerHeight) * 2 + 1;
+        var raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, camara);
+        var puntoInterseccion = new THREE.Vector3();
+        raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0)), puntoInterseccion);
+        this.puntero.position.copy(new THREE.Vector3(puntoInterseccion.x, this.altura, puntoInterseccion.z));
+        this.model.lookAt(this.puntero.position.x, this.altura, this.puntero.position.z);
+    }
+
+    update(teclasPulsadas) {
+        var direccion = false;
+        for (const [key, value] of Object.entries(teclasPulsadas)) {
+            if (key === "w" || key === "s" || key === "a" || key === "d") { 
+                direccion = direccion || value;
+            }
+        }
+
+        var accion = "";
+
+        if (direccion) {
+            accion = "correr";
         } else {
-            this.activeAction.setLoop(THREE.LoopOnce);
-        }
-        // Una vez configurado el accionador, se lanza la animación
-        this.activeAction.play();
-    }
-
-    // ******* ******* ******* ******* ******* ******* ******* 
-
-    // Método para mover al personaje
-    // 0 arriba
-    // 1 izquierda
-    // 2 abajo
-    // 3 derecha
-    mover(direccion) {
-        if (this.estado !== "corriendo") {
-            this.estado = "corriendo";
-            this.fadeToAction("correr", true, 1);
+            accion = "idle";
         }
 
-        if (direccion == Arriba) {
-            this.model.position.z += 0.5;
+        if (this.estado != accion) {
+            this.fadeToAction(accion);
         }
-        if (direccion == Abajo) {
-            this.model.position.z -= 0.5;
-        }
-        if (direccion == Izquierda) {
-            this.model.position.x -= 0.5;
-        }
-        if (direccion == Derecha) {
-            this.model.position.x += 0.5;
-        }
-    }
 
-    update() {
         // Hay que pedirle al mixer que actualice las animaciones que controla
         var dt = this.clock.getDelta();
         if (this.mixer) this.mixer.update(dt);
+
+        
     }
 
 }

@@ -8,16 +8,10 @@ import { Stats } from '../libs/stats.module.js'
 
 // Clases de mi proyecto
 import {Ronin} from './Ronin.js'
- 
 /// La clase fachada del modelo
 /**
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
  */
-
-const Arriba = 0;
-const Izquierda = 1;
-const Abajo = 2;
-const Derecha = 3;
 
 class MyScene extends THREE.Scene {
   constructor (myCanvas) {
@@ -50,28 +44,26 @@ class MyScene extends THREE.Scene {
     
     
     // Por último creamos el modelo.
-
+    this.clock = new THREE.Clock();
+  
     this.ronin = new Ronin(this.gui);
-    this.add(this.ronin);
-    // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
+    this.ronin.waitLoader();
+    this.add(this.ronin);    // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
 
-    window.addEventListener('keydown', (event) => this.moverPersonaje(event));
-  }
-  
-  moverPersonaje(tecla){
-    if (tecla.key == "w") {
-      this.ronin.mover(Arriba);
-    }
-    if (tecla.key == "s") {
-      this.ronin.mover(Abajo);
-    }
-    if (tecla.key == "a") {
-      this.ronin.mover(Izquierda);
-    }
-    if (tecla.key == "d") {
-      this.ronin.mover(Derecha);
-    }
+    this.teclasPulsadas = {};
+
+    window.addEventListener('keydown', (event) => {
+      this.teclasPulsadas[event.key] = true;
+    }, false);
+
+    window.addEventListener('keyup', (event) => {
+      this.teclasPulsadas[event.key] = false;
+    }, false);
+
+    window.addEventListener('mousemove', (event) => {
+      this.ronin.rotarHaciaPuntero(event, this.camera);
+    })
   }
 
   initStats() {
@@ -100,7 +92,7 @@ class MyScene extends THREE.Scene {
     // create an isometric camera
     this.camera = new THREE.OrthographicCamera( d * aspect / - 2, d * aspect / 2, d / 2, d / - 2, 1, 1000 );
     // También se indica dónde se coloca
-    this.camera.position.set (40,40,40);
+    this.camera.position.set (-40,40,-40);
     // Y hacia dónde mira
     var look = new THREE.Vector3 (0,0,0);
     this.camera.lookAt(look);
@@ -229,7 +221,8 @@ class MyScene extends THREE.Scene {
     this.cameraControl.update();
     
     // Se actualiza el resto del modelo    
-    this.ronin.update();
+    this.ronin.update(this.teclasPulsadas);
+
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
 
