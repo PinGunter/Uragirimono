@@ -60,6 +60,7 @@ class Ronin extends THREE.Object3D {
             "../models/gltf/ronin.glb",
             function (gltf) {
                 that.model = gltf.scene;
+                console.log(that.model);
                 that.model.scale.set(0.05, 0.05, 0.05);
                 that.model.position.set(0, that.altura / 2, 0); // mide 10 de altura
 
@@ -74,9 +75,12 @@ class Ronin extends THREE.Object3D {
 
                 that.fadeToAction("idle", true, 1.0); // animacion inicials
 
+                document.getElementById("info").innerHTML = "";
+
+                // document.getElementById("info").innerHTML ="<h1> Ronin </h1> <br> <h2> Usa WASD para moverte y manten B para bailar </h2>";
             },
             function (xhr) {
-                document.getElementById("info").innerHTML = "Cargando: " + (xhr.loaded / 14747348 * 100) + "%";
+                document.getElementById("info").innerHTML = "Cargando: " + (xhr.loaded / 14490616 * 100) + "%";
             },
             function (error) {
 
@@ -125,38 +129,6 @@ class Ronin extends THREE.Object3D {
         }
 
     }
-
-    // createGUI(gui, str) {
-    //     // La interfaz de usuario se crea a partir de la propia información que se ha
-    //     // cargado desde el archivo  gltf
-    //     this.guiControls = {
-    //         // En este campo estará la list de animaciones del archivo
-    //         current: 'Animaciones',
-    //         // Este campo nos permite ver cada animación una sola vez o repetidamente
-    //         repeat: false,
-    //         // Velocidad de la animación
-    //         speed: 1.0
-    //     }
-
-    //     // Creamos y añadimos los controles de la interfaz de usuario
-    //     var folder = gui.addFolder(str);
-    //     var repeatCtrl = folder.add(this.guiControls, 'repeat').name('Repetitivo: ');
-    //     var clipCtrl = folder.add(this.guiControls, 'current').options(this.clipNames).name('Animaciones: ');
-    //     var speedCtrl = folder.add(this.guiControls, 'speed', -2.0, 2.0, 0.1).name('Speed: ');
-    //     //     var that = this;
-    //     // Cada vez que uno de los controles de la interfaz de usuario cambie, 
-    //     //    llamamos al método que lance la animación elegida
-    //     clipCtrl.onChange(() => {
-    //         this.fadeToAction(this.guiControls.current, this.guiControls.repeat, this.guiControls.speed);
-    //     });
-    //     repeatCtrl.onChange(() => {
-    //         this.fadeToAction(this.guiControls.current, this.guiControls.repeat, this.guiControls.speed);
-    //     });
-    //     speedCtrl.onChange((value) => {
-    //         this.activeAction.setEffectiveTimeScale(this.guiControls.speed);
-    //     });
-    // }
-
 
     fadeToAction(name, sentido = 1) {
         const toPlay = this.actions[name];
@@ -247,10 +219,15 @@ class Ronin extends THREE.Object3D {
             sentido = 1;
             accion = "idle";
         }
+                
+        if (teclasPulsadas["b"]){
+            accion = "bailecito";
+        }
+
         if (this.estado != accion) {
             this.fadeToAction(accion, sentido);
         }
-        
+
 
         // Hay que pedirle al mixer que actualice las animaciones que controla
         var dt = this.clock.getDelta();

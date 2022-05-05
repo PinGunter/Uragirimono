@@ -95,7 +95,7 @@ class MyScene extends THREE.Scene {
     // create an isometric camera
     // this.camera = new THREE.OrthographicCamera( d * aspect / - 2, d * aspect / 2, d / 2, d / - 2, 1, 1000 );
     // También se indica dónde se coloca
-    this.camera.position.set (-40,40,-40);
+    this.camera.position.set (-40,80,-40);
     // Y hacia dónde mira
     var look = new THREE.Vector3 (0,0,0);
     this.camera.lookAt(look);
