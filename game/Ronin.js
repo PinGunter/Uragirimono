@@ -13,9 +13,12 @@ class Ronin extends THREE.Object3D {
         super();
         this.estado = "idle";
         this.clock = new THREE.Clock();
+        this.clockMovimiento = new THREE.Clock();
         this.loader = new GLTFLoader();
         this.gui = gui;
         this.altura = 10;
+        this.newX = 0;
+        this.newZ = 0;
 
         this.materialRojo = new THREE.MeshToonMaterial({color:"red",opacity: 0.5, transparent: true });
         this.materialAmarillo = new THREE.MeshToonMaterial({color:"yellow",opacity: 0.5, transparent: true });
@@ -202,22 +205,19 @@ class Ronin extends THREE.Object3D {
         this.ultimaDireccion.x = this.puntero.position.x;
         this.ultimaDireccion.y = this.altura;
         this.ultimaDireccion.z = this.puntero.position.z;
-        
         this.ronin.rotation.y = Math.atan2( ( this.puntero.position.x - this.ronin.position.x ), ( this.puntero.position.z - this.ronin.position.z ) );
     }
 
 
-    moverPersonaje(teclasPulsadas, camara){
+    moverPersonaje(teclasPulsadas, camara, delta){
         this.calcularOffsetDireccion(teclasPulsadas);
         camara.getWorldDirection(this.direccion);
         this.direccion.y = 0;
         this.direccion.normalize();
         this.direccion.applyAxisAngle(this.anguloRotacion, this.direccionOffset);
-        var delta = this.clock.getDelta();
-        var moveX = this.direccion.x * this.velocidadMovimiento *delta;
-        var moveZ = this.direccion.z * this.velocidadMovimiento * delta;
-        this.ronin.position.x += moveX;
-        this.ronin.position.z += moveZ;
+        this.newX += this.direccion.x * this.velocidadMovimiento *delta;
+        this.newZ += this.direccion.z * this.velocidadMovimiento * delta;
+        console.log(this.newX);
     }
 
     update(teclasPulsadas, camara) {
@@ -227,7 +227,7 @@ class Ronin extends THREE.Object3D {
                 direccion = direccion || value;
             }
         }
-
+        
         var accion = "";
         var sentido = 1;
         if (direccion) {
@@ -250,13 +250,18 @@ class Ronin extends THREE.Object3D {
         if (this.estado != accion) {
             this.fadeToAction(accion, sentido);
         }
+        
 
         // Hay que pedirle al mixer que actualice las animaciones que controla
         var dt = this.clock.getDelta();
         if (this.mixer) this.mixer.update(dt);
 
-        if (accion == "correr")
-        this.moverPersonaje(teclasPulsadas, camara);
+        var delta = this.clockMovimiento.getDelta();
+        if (direccion){
+            this.moverPersonaje(teclasPulsadas, camara, delta);
+        }
+        this.ronin.position.x = this.newX;
+        this.ronin.position.z = this.newZ;
 
     }
 

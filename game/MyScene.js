@@ -90,14 +90,18 @@ class MyScene extends THREE.Scene {
     //   Los planos de recorte cercano y lejano
     var aspect = window.innerWidth / window.innerHeight;
     var d = 20;
+    //create a perspective camera
+    this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
     // create an isometric camera
-    this.camera = new THREE.OrthographicCamera( d * aspect / - 2, d * aspect / 2, d / 2, d / - 2, 1, 1000 );
+    // this.camera = new THREE.OrthographicCamera( d * aspect / - 2, d * aspect / 2, d / 2, d / - 2, 1, 1000 );
     // También se indica dónde se coloca
     this.camera.position.set (-40,40,-40);
     // Y hacia dónde mira
     var look = new THREE.Vector3 (0,0,0);
     this.camera.lookAt(look);
     this.camera.rotation.order = "XYZ";
+    // this.camera.fov *= 10;
+    // this.camera.updateProjectionMatrix();
     this.add (this.camera);
     
     // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
@@ -111,7 +115,7 @@ class MyScene extends THREE.Scene {
   }
   
   createGround () {
-    var gridHelper = new THREE.GridHelper(100,10);
+    var gridHelper = new THREE.GridHelper(100,20);
     this.add(gridHelper);
   }
   
