@@ -9,13 +9,12 @@ const Abajo = 2;
 const Derecha = 3;
 
 class Ronin extends THREE.Object3D {
-    constructor(gui) {
+    constructor() {
         super();
         this.estado = "idle";
         this.clock = new THREE.Clock();
         this.clockMovimiento = new THREE.Clock();
         this.loader = new GLTFLoader();
-        this.gui = gui;
         this.altura = 10;
         this.newX = 0;
         this.newZ = 0;
@@ -180,6 +179,9 @@ class Ronin extends THREE.Object3D {
         this.ronin.rotation.y = Math.atan2( ( this.puntero.position.x - this.ronin.position.x ), ( this.puntero.position.z - this.ronin.position.z ) );
     }
 
+    atacar(evento, camara, teclasPulsadas){
+        this.fadeToAction("ataque",1);
+    }
 
     moverPersonaje(teclasPulsadas, camara, delta){
         this.calcularOffsetDireccion(teclasPulsadas);
