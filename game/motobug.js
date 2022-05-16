@@ -1,9 +1,11 @@
 import * as THREE from '../libs/three.module.js'
+import {CSG} from '../libs/CSG-v2.js'
+
 
 class Motobug extends THREE.Object3D{
     constructor(){
         super();
-        var ruedaGeo = new THREE.TorusGeometry(2, 1, 16, 100);
+        var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 100);
         var ruedaMat = new THREE.MeshToonMaterial({color: "grey"});
 
         this.rueda = new THREE.Mesh(ruedaGeo, ruedaMat);
@@ -24,18 +26,22 @@ class Motobug extends THREE.Object3D{
         var path = new THREE.CatmullRomCurve3(puntos3d);
         var cuerpoGeo = new THREE.ExtrudeGeometry(formaCuerpo, {extrudePath: path, steps: 50});
         var cuerpoMat = new THREE.MeshToonMaterial({color: "red"});
-        this.cuerpo = new THREE.Mesh(cuerpoGeo, cuerpoMat);
+        var cuerpoCentral = new THREE.Mesh(cuerpoGeo, cuerpoMat);
 
+        var cuerpoLatGeo1 = new THREE.BoxGeometry(10,5,9);
+        cuerpoLatGeo1.translate(0,2.5,0);
+        var cuerpoLat1 = new THREE.Mesh(cuerpoLatGeo1,cuerpoMat);
 
+        var cuerpo = new CSG();
+        cuerpo.union([cuerpoCentral, cuerpoLat1]); 
         this.add(this.rueda);
-        this.add(this.cuerpo);
-        
+        this.add(cuerpo.toMesh());       
     }
 
 
     
     update(){
-        this.rotation.y += 0.01;
+        // this.rotation.y += 0.01;
     }
 }
 

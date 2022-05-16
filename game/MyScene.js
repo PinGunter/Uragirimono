@@ -49,8 +49,8 @@ class MyScene extends THREE.Scene {
 
     this.ronin = new Ronin();
     this.motobug = new Motobug();
-    this.ronin.waitLoader();
-    this.add(this.ronin);
+    // this.ronin.waitLoader();
+    // this.add(this.ronin);
     this.add(this.motobug);
     this.teclasPulsadas = {};
   }
