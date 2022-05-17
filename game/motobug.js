@@ -31,15 +31,15 @@ class Motobug extends THREE.Object3D{
         });
         var path = new THREE.CatmullRomCurve3(puntos3d);
         var cuerpoGeo = new THREE.ExtrudeGeometry(formaCuerpo, {extrudePath: path, steps: 50});
-        var cuerpoMat = new THREE.MeshToonMaterial({color: "red"});
+        var cuerpoMat = new THREE.MeshToonMaterial({color: 0xe6202a});
         var cuerpoCentral = new THREE.Mesh(cuerpoGeo, cuerpoMat);
 
-        var cuerpoLatGeo1 = new THREE.BoxGeometry(10,5,9);
-        cuerpoLatGeo1.translate(0,2.5,0);
-        var cuerpoLat1 = new THREE.Mesh(cuerpoLatGeo1,cuerpoMat);
+        var cuerpoLatGeo = new THREE.BoxGeometry(10,5,9);
+        cuerpoLatGeo.translate(0,2.5,0);
+        var cuerpoLat = new THREE.Mesh(cuerpoLatGeo,cuerpoMat);
 
         var cuerpo = new CSG();
-        cuerpo.union([cuerpoCentral, cuerpoLat1]); 
+        cuerpo.union([cuerpoCentral, cuerpoLat]); 
         this.cuerpoFinal = cuerpo.toMesh();
       
         
@@ -47,7 +47,7 @@ class Motobug extends THREE.Object3D{
         var pathCabeza = new THREE.EllipseCurve(
             0,0,
             5.5,5.5,
-            Math.PI/3, 0,
+            Math.PI/3, 0.2,
             true,
             0
         )       
@@ -59,20 +59,46 @@ class Motobug extends THREE.Object3D{
         });
         path = new THREE.CatmullRomCurve3(puntos3d);
         var cabezaGeo = new THREE.ExtrudeGeometry(formaCabeza, {extrudePath: path, steps: 50});
-        var cabezaMat = new THREE.MeshToonMaterial({color: "cyan"});
+        var cabezaMat = new THREE.MeshToonMaterial({color: 0x037bfc});
         this.cabeza = new THREE.Mesh(cabezaGeo, cabezaMat);
 
 
-        // var cabezaGeo = new THREE.SphereGeometry(4.5,16,16,0,2*Math.PI,0,Math.PI);
-        // var cabezaMat = new THREE.MeshToonMaterial({color: "cyan"}); 
-        // cabezaGeo.scale(1,0.5,1);
-        // cabezaGeo.rotateZ(Math.PI/4);
-        // cabezaGeo.translate(-9,5.5,0);
-        // this.cabeza = new THREE.Mesh(cabezaGeo, cabezaMat);
+        var decoGeo1 = new THREE.CylinderGeometry(2,2,0.75,16,16);
+        var decoMat = new THREE.MeshToonMaterial({color: 0x333232});
+        decoGeo1.rotateX(Math.PI/3);
+        decoGeo1.translate(0,7.5,4.5);
+        this.deco1 = new THREE.Mesh(decoGeo1, decoMat);
+
+        
+        var decoGeo2 = new THREE.CylinderGeometry(2,2,0.75,16,16);
+        decoGeo2.rotateX(-Math.PI/3);
+        decoGeo2.translate(0,7.5,-4.5);
+        this.deco2 = new THREE.Mesh(decoGeo2, decoMat);
+        
+        var decoGeo3 = new THREE.CylinderGeometry(2,2,0.75,16,16);
+        decoGeo3.rotateX(Math.PI/4);
+        decoGeo3.rotateZ(Math.PI/2);
+        decoGeo3.rotateX(-Math.PI/5);
+        decoGeo3.translate(-8,4,3);
+        this.deco3 = new THREE.Mesh(decoGeo3, decoMat);
+
+        var decoGeo4 = new THREE.CylinderGeometry(2,2,0.75,16,16);
+        decoGeo4.rotateX(-Math.PI/4);
+        decoGeo4.rotateZ(Math.PI/2);
+        decoGeo4.rotateX(Math.PI/5);
+        decoGeo4.translate(-8,4,-3);
+        this.deco4 = new THREE.Mesh(decoGeo4, decoMat);
+
+        this.decoraciones = new THREE.Group();
+        this.decoraciones.add(this.deco1);
+        this.decoraciones.add(this.deco2);
+        this.decoraciones.add(this.deco3);
+        this.decoraciones.add(this.deco4);
 
         this.add(this.rueda);
         this.add(this.cuerpoFinal);       
         this.add(this.cabeza);
+        this.add(this.decoraciones);
     }
 
 
