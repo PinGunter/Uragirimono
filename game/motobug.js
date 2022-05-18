@@ -5,16 +5,17 @@ import {CSG} from '../libs/CSG-v2.js'
 class Motobug extends THREE.Object3D{
     constructor(){
         super();
+        // la rueda
         var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 100);
-        var texture = new THREE.TextureLoader().load("../imgs/tire.jpg");
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
-        var ruedaMat = new THREE.MeshToonMaterial({color: "grey", map: texture});
+        var texturaRueda = new THREE.TextureLoader().load("../imgs/tire.jpg");
+        texturaRueda.wrapS = THREE.RepeatWrapping;
+        texturaRueda.wrapT = THREE.RepeatWrapping;
+        texturaRueda.repeat.set(1, 1);
+        var ruedaMat = new THREE.MeshToonMaterial({color: "grey", map: texturaRueda});
 
         this.rueda = new THREE.Mesh(ruedaGeo, ruedaMat);
 
-
+        // el cuerpo
 
         var curvaCuerpo = new THREE.EllipseCurve(
             0,0,
@@ -43,7 +44,7 @@ class Motobug extends THREE.Object3D{
         this.cuerpoFinal = cuerpo.toMesh();
       
         
-        
+        // la cabezaa
         var pathCabeza = new THREE.EllipseCurve(
             0,0,
             5.5,5.5,
@@ -62,6 +63,8 @@ class Motobug extends THREE.Object3D{
         var cabezaMat = new THREE.MeshToonMaterial({color: 0x037bfc});
         this.cabeza = new THREE.Mesh(cabezaGeo, cabezaMat);
 
+
+        // las manchas negras
 
         var decoGeo1 = new THREE.CylinderGeometry(2,2,0.75,16,16);
         var decoMat = new THREE.MeshToonMaterial({color: 0x333232});
@@ -95,10 +98,71 @@ class Motobug extends THREE.Object3D{
         this.decoraciones.add(this.deco3);
         this.decoraciones.add(this.deco4);
 
+        // los ojos
+        var ojoGeo1 = new THREE.SphereGeometry(1.5,16,16);
+        ojoGeo1.translate(8, 6, -2);
+        var ojoMat = new THREE.MeshToonMaterial({color: "white"});
+        this.ojo1 = new THREE.Mesh(ojoGeo1, ojoMat);
+
+        var ojoGeo2 = new THREE.SphereGeometry(1.5,16,16);
+        ojoGeo2.translate(8, 6, 2);
+        this.ojo2 = new THREE.Mesh(ojoGeo2, ojoMat);
+
+        var pupGeo1 = new THREE.SphereGeometry(.5,16,16);
+        pupGeo1.translate(9.5,6, -2);
+        var pupMat = new THREE.MeshToonMaterial({color: "black"});
+        this.pup1 = new THREE.Mesh(pupGeo1, pupMat);
+
+        var pupGeo2 = new THREE.SphereGeometry(.5,16,16);
+        pupGeo2.translate(9.5,6, 2);
+        this.pup2 = new THREE.Mesh(pupGeo2, pupMat);
+
+
+        // los "dientes"
+
+        var dienteShape = new THREE.Shape();
+        dienteShape.moveTo(1,0);
+        dienteShape.lineTo(0,-3);
+        dienteShape.lineTo(-1,0);
+        var dienteGeo1 = new THREE.ExtrudeGeometry(dienteShape, {depth: .5});
+        dienteGeo1.rotateY(Math.PI/2);
+        dienteGeo1.translate(10,3,-2);
+        dienteGeo1.rotateX(Math.PI/5);
+        this.diente1 = new THREE.Mesh(dienteGeo1, ojoMat);
+
+        var dienteGeo2 = new THREE.ExtrudeGeometry(dienteShape, {depth: .5});
+        dienteGeo2.rotateY(Math.PI/2);
+        dienteGeo2.translate(10,3,2);
+        dienteGeo2.rotateX(-Math.PI/5);
+        this.diente2 = new THREE.Mesh(dienteGeo2, ojoMat);
+
+
+        // los tubos de escape
+        var tuboGeo1 = new THREE.CylinderGeometry(1,1, 5, 16, 16);
+        var tuboMat = new THREE.MeshToonMaterial({map: new THREE.TextureLoader().load("../imgs/tubo.jpg"), metalness: 1});
+        tuboGeo1.rotateZ(-Math.PI/2 - Math.PI/6);
+        tuboGeo1.translate(-8,3,-5);
+        this.tubo1 = new THREE.Mesh(tuboGeo1, tuboMat);
+
+        var tuboGeo2 = new THREE.CylinderGeometry(1,1, 5, 16, 16);
+        tuboGeo2.rotateZ(-Math.PI/2 - Math.PI/6);
+        tuboGeo2.translate(-8,3,5);
+        this.tubo2 = new THREE.Mesh(tuboGeo2, tuboMat);
+
+        // añadir al objeto
         this.add(this.rueda);
         this.add(this.cuerpoFinal);       
         this.add(this.cabeza);
+        this.add(this.ojo1);
+        this.add(this.ojo2);
+        this.add(this.pup1);
+        this.add(this.pup2);
         this.add(this.decoraciones);
+        this.add(this.diente1);
+        this.add(this.diente2);
+        this.add(this.tubo1);
+        this.add(this.tubo2);
+
     }
 
 
