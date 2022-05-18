@@ -149,6 +149,13 @@ class Motobug extends THREE.Object3D{
         tuboGeo2.translate(-8,3,5);
         this.tubo2 = new THREE.Mesh(tuboGeo2, tuboMat);
 
+        // los brazos
+        var brazoGeo1 = new THREE.CylinderGeometry(0.5,0.5,5,16,16);
+        brazoGeo1.rotateX(Math.PI/2);
+        brazoGeo1.translate(2,3,4);
+        var brazoMat = new THREE.MeshToonMaterial({color: "yellow"});
+        this.brazo1 = new THREE.Mesh(brazoGeo1, brazoMat);
+        
         // añadir al objeto
         this.add(this.rueda);
         this.add(this.cuerpoFinal);       
@@ -162,6 +169,7 @@ class Motobug extends THREE.Object3D{
         this.add(this.diente2);
         this.add(this.tubo1);
         this.add(this.tubo2);
+        this.add(this.brazo1);
 
     }
 

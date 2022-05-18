@@ -3,7 +3,7 @@
 
 import * as THREE from '../libs/three.module.js'
 import { GUI } from '../libs/dat.gui.module.js'
-import { TrackballControls } from '../libs/TrackballControls.js'
+import { OrbitControls } from '../libs/OrbitControls.js'
 import { Stats } from '../libs/stats.module.js'
 
 // Clases de mi proyecto
@@ -47,12 +47,14 @@ class MyScene extends THREE.Scene {
     // Por último creamos el modelo.
     this.clock = new THREE.Clock();
 
-    this.ronin = new Ronin();
+    this.ronin = new Ronin(this.camera);
     this.motobug = new Motobug();
-    // this.ronin.waitLoader();
-    // this.add(this.ronin);
-    this.add(this.motobug);
+    this.ronin.waitLoader();
+    this.add(this.ronin);
+    // this.add(this.motobug);
     this.teclasPulsadas = {};
+
+    this.roninTarget = new THREE.Vector3();
   }
 
   initStats() {
@@ -83,23 +85,23 @@ class MyScene extends THREE.Scene {
     // create an isometric camera
     // this.camera = new THREE.OrthographicCamera( d * aspect / - 2, d * aspect / 2, d / 2, d / - 2, 1, 1000 );
     // También se indica dónde se coloca
-    this.camera.position.set(-40, 80, -40);
+    // this.camera.position.set(-40, 80, -40);
     // Y hacia dónde mira
     var look = new THREE.Vector3(0, 0, 0);
-    this.camera.lookAt(look);
-    this.camera.rotation.order = "XYZ";
+    // this.camera.lookAt(look);
+    // this.camera.rotation.order = "XYZ";
     // this.camera.fov *= 10;
     // this.camera.updateProjectionMatrix();
-    this.add(this.camera);
+    // this.add(this.camera);
 
     // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
-    this.cameraControl = new TrackballControls(this.camera, this.renderer.domElement);
+    // this.cameraControl = new OrbitControls(this.camera, this.renderer.domElement);
     // Se configuran las velocidades de los movimientos
-    this.cameraControl.rotateSpeed = 5;
-    this.cameraControl.zoomSpeed = -2;
-    this.cameraControl.panSpeed = 0.5;
+    // this.cameraControl.rotateSpeed = 5;
+    // this.cameraControl.zoomSpeed = -2;
+    // this.cameraControl.panSpeed = 0.5;
     // Debe orbitar con respecto al punto de mira de la cámara
-    this.cameraControl.target = look;
+    // this.cameraControl.target = look;
   }
 
   createGround() {
@@ -211,7 +213,7 @@ class MyScene extends THREE.Scene {
     // Se actualizan los elementos de la escena para cada frame
 
     // Se actualiza la posición de la cámara según su controlador
-    this.cameraControl.update();
+    // this.cameraControl.update();
 
     // Se actualiza el resto del modelo    
     this.ronin.update(this.teclasPulsadas, this.camera);

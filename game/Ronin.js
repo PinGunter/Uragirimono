@@ -9,7 +9,7 @@ const Abajo = 2;
 const Derecha = 3;
 
 class Ronin extends THREE.Object3D {
-    constructor() {
+    constructor(camera) {
         super();
         this.estado = "idle";
         this.clock = new THREE.Clock();
@@ -18,6 +18,8 @@ class Ronin extends THREE.Object3D {
         this.altura = 10;
         this.newX = 0;
         this.newZ = 0;
+        this.camera = camera;
+
 
         this.materialRojo = new THREE.MeshToonMaterial({color:"red",opacity: 0.5, transparent: true });
         this.materialAmarillo = new THREE.MeshToonMaterial({color:"yellow",opacity: 0.5, transparent: true });
@@ -26,8 +28,19 @@ class Ronin extends THREE.Object3D {
             this.materialAmarillo
         );
         this.area.rotateX(Math.PI / 2);
-        this.ronin = new THREE.Object3D();
-        this.ronin.add(this.area);
+
+        this.ronin = new THREE.Object3D(); // el personaje en sí
+        this.ronin.add(this.area)
+
+        this.roninWrap = new THREE.Object3D();
+        this.roninWrap.add(this.ronin);
+        this.add(this.roninWrap);
+
+        this.camera.position.set(50,90,0);
+        this.roninWrap.add(this.camera);
+        var target = new THREE.Vector3(0,0,0);
+        // this.camera.getWorldPosition(target);
+        this.camera.lookAt(target);
 
         this.puntero = new THREE.Mesh(
             new THREE.TorusGeometry(1, 0.2, 16, 100),
@@ -68,7 +81,7 @@ class Ronin extends THREE.Object3D {
                 var animations = gltf.animations;
 
                 that.ronin.add(that.model);
-                that.add(that.ronin);
+                that.roninWrap.add(that.ronin);
 
                 that.createActions(that.model, animations);
 
@@ -239,8 +252,8 @@ class Ronin extends THREE.Object3D {
         if (direccion){
             this.moverPersonaje(teclasPulsadas, camara, delta);
         }
-        this.ronin.position.x = this.newX;
-        this.ronin.position.z = this.newZ;
+        this.roninWrap.position.x = this.newX;
+        this.roninWrap.position.z = this.newZ;
 
     }
 
