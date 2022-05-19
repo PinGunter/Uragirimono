@@ -19,6 +19,9 @@ class Ronin extends THREE.Object3D {
         this.newX = 0;
         this.newZ = 0;
         this.camera = camera;
+        this.vidas = 10;
+        this.relojDanio = new THREE.Clock();
+
 
 
         this.materialRojo = new THREE.MeshToonMaterial({color:"red",opacity: 0.5, transparent: true });
@@ -80,7 +83,6 @@ class Ronin extends THREE.Object3D {
             "../models/gltf/ronin.glb",
             function (gltf) {
                 that.model = gltf.scene;
-                console.log(that.model);
                 that.model.scale.set(0.05, 0.05, 0.05);
                 that.model.position.set(0, that.altura / 2, 0); // mide 10 de altura
 
@@ -120,7 +122,6 @@ class Ronin extends THREE.Object3D {
         //    y se gestiona a través de dicho accionador
         // El mixer es el controlador general de los accionadores particulares
         this.mixer = new THREE.AnimationMixer(model);
-        console.log(this.mixer);
 
         // El siguiente diccionario contendrá referencias a los diferentes accionadores particulares 
         // El diccionario Lo usaremos para dirigirnos a ellos por los nombres de las animaciones que gestionan
@@ -155,7 +156,10 @@ class Ronin extends THREE.Object3D {
         const current = this.actions[this.estado];
         current.fadeOut(this.velocidadTrans);
         toPlay.setEffectiveTimeScale(sentido);
-        toPlay.setLoop(THREE.Repeat);
+        if (name === "ataque" || name === "ataqueEspecial" || name === "recibeGolpe" || name === "morir") 
+            toPlay.setLoop(THREE.LoopOnce);
+        else
+            toPlay.setLoop(THREE.Repeat);
         toPlay.reset().fadeIn(this.velocidadTrans).play();
         this.estado = name;
     }
@@ -214,7 +218,7 @@ class Ronin extends THREE.Object3D {
         this.newZ += this.direccion.z * this.velocidadMovimiento * delta;
     }
 
-    interseccionObjeto (otro) {
+    interseccionEnemigo (otro) {
         var vectorEntreObj = new THREE.Vector2();
         var v_caja = new THREE.Vector3();
         var v_otro = new THREE.Vector3();
@@ -222,8 +226,19 @@ class Ronin extends THREE.Object3D {
         this.caja.getWorldPosition(v_caja);
         vectorEntreObj.subVectors (new THREE.Vector2 (v_caja.x, v_caja.z),
                                        new THREE.Vector2 (v_otro.x, v_otro.z));
-        console.log(vectorEntreObj);
         return (vectorEntreObj.length() < this.caja.geometry.parameters.width); // se puede revisar
+    }
+
+    quitarVida(){
+        var dt = this.relojDanio.getDelta();
+        if (dt > 0.3){
+            this.vidas -= 1;
+            if (vidas > 0) this.fadeToAction("recibeGolpe")
+        }
+
+        if (vidas < 1){
+            this.fadeToAction("morir");
+        }
     }
 
     update(teclasPulsadas, camara) {
@@ -259,7 +274,8 @@ class Ronin extends THREE.Object3D {
         }
 
         if (this.estado != accion) {
-            this.fadeToAction(accion, sentido);
+            if (!this.actions["ataque"].isRunning())
+                this.fadeToAction(accion, sentido);
         }
 
 

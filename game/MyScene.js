@@ -82,8 +82,6 @@ class MyScene extends THREE.Scene {
     var d = 20;
     //create a perspective camera
     this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-    // create an isometric camera
-    // this.camera = new THREE.OrthographicCamera( d * aspect / - 2, d * aspect / 2, d / 2, d / - 2, 1, 1000 );
     // También se indica dónde se coloca
     // this.camera.position.set(-40, 80, -40);
     // Y hacia dónde mira
@@ -217,8 +215,14 @@ class MyScene extends THREE.Scene {
 
     // Se actualiza el resto del modelo    
     this.ronin.update(this.teclasPulsadas, this.camera);
-    if (this.ronin.interseccionObjeto(this.motobug)){
+    if (this.ronin.interseccionEnemigo(this.motobug)){
+        this.ronin.quitarVida();
         document.getElementById("colision").innerHTML = "SÍ";
+        var vidas = "";
+        for (var i=0; i < this.ronin.vidas; i++){
+          vidas += "❤️";
+        }
+        document.getElementById("vidas").innerHTML = vidas;
     }  else{
       document.getElementById("colision").innerHTML = "NO";
     }
