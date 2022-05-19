@@ -51,7 +51,7 @@ class MyScene extends THREE.Scene {
     this.motobug = new Motobug();
     this.ronin.waitLoader();
     this.add(this.ronin);
-    // this.add(this.motobug);
+    this.add(this.motobug);
     this.teclasPulsadas = {};
 
     this.roninTarget = new THREE.Vector3();
@@ -217,6 +217,11 @@ class MyScene extends THREE.Scene {
 
     // Se actualiza el resto del modelo    
     this.ronin.update(this.teclasPulsadas, this.camera);
+    if (this.ronin.interseccionObjeto(this.motobug)){
+        document.getElementById("colision").innerHTML = "SÍ";
+    }  else{
+      document.getElementById("colision").innerHTML = "NO";
+    }
     this.motobug.update();
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"

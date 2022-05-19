@@ -36,6 +36,14 @@ class Ronin extends THREE.Object3D {
         this.roninWrap.add(this.ronin);
         this.add(this.roninWrap);
 
+
+        // caja que envuelve al personaje para facilitar deteccion de colisiones
+        this.caja = new THREE.Mesh(
+            new THREE.BoxGeometry(6, 6, 6),
+            new THREE.MeshNormalMaterial({transparent: true, opacity: 0})
+        )
+        this.caja.name = "cajaRonin";
+        this.roninWrap.add(this.caja);
         this.camera.position.set(50,90,0);
         this.roninWrap.add(this.camera);
         var target = new THREE.Vector3(0,0,0);
@@ -204,7 +212,18 @@ class Ronin extends THREE.Object3D {
         this.direccion.applyAxisAngle(this.anguloRotacion, this.direccionOffset);
         this.newX += this.direccion.x * this.velocidadMovimiento *delta;
         this.newZ += this.direccion.z * this.velocidadMovimiento * delta;
-        console.log(this.newX);
+    }
+
+    interseccionObjeto (otro) {
+        var vectorEntreObj = new THREE.Vector2();
+        var v_caja = new THREE.Vector3();
+        var v_otro = new THREE.Vector3();
+        otro.caja.getWorldPosition(v_otro);
+        this.caja.getWorldPosition(v_caja);
+        vectorEntreObj.subVectors (new THREE.Vector2 (v_caja.x, v_caja.z),
+                                       new THREE.Vector2 (v_otro.x, v_otro.z));
+        console.log(vectorEntreObj);
+        return (vectorEntreObj.length() < this.caja.geometry.parameters.width); // se puede revisar
     }
 
     update(teclasPulsadas, camara) {

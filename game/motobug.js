@@ -171,6 +171,16 @@ class Motobug extends THREE.Object3D{
         this.add(this.tubo2);
         this.add(this.brazo1);
 
+
+        // caja para las colisiones
+        this.caja = new THREE.Mesh(
+            new THREE.BoxGeometry(13,13,13),
+            new THREE.MeshNormalMaterial({transparent: true, opacity: 0})
+        )
+        this.caja.name = "cajaMotobug";
+        this.add(this.caja);
+
+        this.scale.set(0.5,0.5,0.5)
     }
 
 
