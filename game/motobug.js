@@ -139,7 +139,7 @@ class Motobug extends THREE.Object3D{
 
         // los tubos de escape
         var tuboGeo1 = new THREE.CylinderGeometry(1,1, 5, 16, 16);
-        var tuboMat = new THREE.MeshToonMaterial({map: new THREE.TextureLoader().load("../imgs/tubo.jpg"), metalness: 1});
+        var tuboMat = new THREE.MeshPhongMaterial({map: new THREE.TextureLoader().load("../imgs/tubo.jpg"), metalness: 1});
         tuboGeo1.rotateZ(-Math.PI/2 - Math.PI/6);
         tuboGeo1.translate(-8,3,-5);
         this.tubo1 = new THREE.Mesh(tuboGeo1, tuboMat);

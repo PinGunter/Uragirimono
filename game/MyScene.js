@@ -93,13 +93,13 @@ class MyScene extends THREE.Scene {
     // this.add(this.camera);
 
     // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
-    // this.cameraControl = new OrbitControls(this.camera, this.renderer.domElement);
+    this.cameraControl = new OrbitControls(this.camera, this.renderer.domElement);
     // Se configuran las velocidades de los movimientos
-    // this.cameraControl.rotateSpeed = 5;
-    // this.cameraControl.zoomSpeed = -2;
-    // this.cameraControl.panSpeed = 0.5;
+    this.cameraControl.rotateSpeed = 5;
+    this.cameraControl.zoomSpeed = -2;
+    this.cameraControl.panSpeed = 0.5;
     // Debe orbitar con respecto al punto de mira de la cámara
-    // this.cameraControl.target = look;
+    this.cameraControl.target = look;
   }
 
   createGround() {
@@ -250,7 +250,11 @@ class MyScene extends THREE.Scene {
   }
 
   atacarRonin(evento) {
-    this.ronin.atacar(evento, this.camera, this.teclasPulsadas);
+    this.ronin.atacar(evento);
+  }
+
+  ataqueEspecialRoning(evento){
+    this.ronin.ataqueEspecial(evento);
   }
 }
 
@@ -264,6 +268,9 @@ $(function () {
   window.addEventListener("resize", () => scene.onWindowResize());
   window.addEventListener('keydown', (event) => {
     scene.pulsarTecla(event);
+    if (event.key == "q") {
+      scene.ataqueEspecialRoning(event);
+    }
   }, false);
 
   window.addEventListener('keyup', (event) => {
@@ -277,6 +284,28 @@ $(function () {
   window.addEventListener('click', (event) => {
     scene.atacarRonin(event);
   })
+
+  window.setInterval(() => {
+    var tActual = document.getElementById("cooldown").innerHTML;
+    console.log(tActual);
+    var tActual = parseInt(tActual);
+    if (tActual > 0){
+      document.getElementById("div-cooldown").style.backgroundColor = "rgba(255,0,0,0.5)";
+      document.getElementById("cooldown").innerHTML = (tActual - 1);
+      scene.ronin.reducirCooldown();
+    }
+
+    if (tActual === 0){
+      document.getElementById("disponible").innerHTML = "Ataque Especial disponible";
+      document.getElementById("div-cooldown").style.backgroundColor = "rgba(0,255,0,0.5)";
+      document.getElementById("cooldown").innerHTML = "";
+    }
+
+  }, 1000);
+
+  document.getElementById("disponible").innerHTML = "Ataque Especial disponible";
+  document.getElementById("div-cooldown").style.backgroundColor = "rgba(0,255,0,0.5)";
+  document.getElementById("cooldown").innerHTML = "";
 
   // Que no se nos olvide, la primera visualización.
   scene.update();

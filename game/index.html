@@ -14,6 +14,20 @@
             overflow: hidden;
             cursor: none;
         }
+
+        #div-cooldown{
+            position: absolute; 
+            z-index:100; 
+            bottom: 10%; 
+            right: 1%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            align-content: center;
+            border-radius: 0.5em;
+            background-color: rgba(255, 0, 0, 0.5);
+            padding: 2em;
+        }
     </style>
 </head>
 
@@ -41,6 +55,10 @@
     <div style="position: absolute; z-index:100; top: 1%; left: 1%">
         <span id="vidas" style="font-size: x-large;color: red;"></span>
     </div>
+
+    <div id="div-cooldown">
+        <span id="disponible" style="font-size: x-large; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"></span>
+        <span id="cooldown" style="font-size: x-large; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"></span>
 </body>
 
 </html>

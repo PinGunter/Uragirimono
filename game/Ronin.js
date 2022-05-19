@@ -22,10 +22,11 @@ class Ronin extends THREE.Object3D {
         this.vidas = 10;
         this.relojDanio = new THREE.Clock();
 
+        this.ataqueEspecialCooldown = 5;
+        this.tiempoCooldown = 0;
 
-
-        this.materialRojo = new THREE.MeshToonMaterial({color:"red",opacity: 0.5, transparent: true });
-        this.materialAmarillo = new THREE.MeshToonMaterial({color:"yellow",opacity: 0.5, transparent: true });
+        this.materialRojo = new THREE.MeshToonMaterial({ color: "red", opacity: 0.5, transparent: true });
+        this.materialAmarillo = new THREE.MeshToonMaterial({ color: "yellow", opacity: 0.5, transparent: true });
         this.area = new THREE.Mesh(
             new THREE.TorusGeometry(5, 0.5, 16, 100),
             this.materialAmarillo
@@ -43,13 +44,13 @@ class Ronin extends THREE.Object3D {
         // caja que envuelve al personaje para facilitar deteccion de colisiones
         this.caja = new THREE.Mesh(
             new THREE.BoxGeometry(6, 6, 6),
-            new THREE.MeshNormalMaterial({transparent: true, opacity: 0})
+            new THREE.MeshNormalMaterial({ transparent: true, opacity: 0 })
         )
         this.caja.name = "cajaRonin";
         this.roninWrap.add(this.caja);
-        this.camera.position.set(50,90,0);
+        this.camera.position.set(50, 90, 0);
         this.roninWrap.add(this.camera);
-        var target = new THREE.Vector3(0,0,0);
+        var target = new THREE.Vector3(0, 0, 0);
         // this.camera.getWorldPosition(target);
         this.camera.lookAt(target);
 
@@ -156,7 +157,7 @@ class Ronin extends THREE.Object3D {
         const current = this.actions[this.estado];
         current.fadeOut(this.velocidadTrans);
         toPlay.setEffectiveTimeScale(sentido);
-        if (name === "ataque" || name === "ataqueEspecial" || name === "recibeGolpe" || name === "morir") 
+        if (name === "ataque" || name === "ataqueEspecial" || name === "recibeGolpe" || name === "morir")
             toPlay.setLoop(THREE.LoopOnce);
         else
             toPlay.setLoop(THREE.Repeat);
@@ -201,42 +202,58 @@ class Ronin extends THREE.Object3D {
         this.ultimaDireccion.x = this.puntero.position.x;
         this.ultimaDireccion.y = this.altura;
         this.ultimaDireccion.z = this.puntero.position.z;
-        this.ronin.rotation.y = Math.atan2( ( this.puntero.position.x - this.ronin.position.x ), ( this.puntero.position.z - this.ronin.position.z ) );
+        this.ronin.rotation.y = Math.atan2((this.puntero.position.x - this.ronin.position.x), (this.puntero.position.z - this.ronin.position.z));
     }
 
-    atacar(evento, camara, teclasPulsadas){
-        this.fadeToAction("ataque",1);
+    atacar(evento) {
+        this.fadeToAction("ataque", 1);
     }
 
-    moverPersonaje(teclasPulsadas, camara, delta){
+    ataqueEspecial(evento) {
+        if (this.tiempoCooldown == 0) {
+            this.fadeToAction("ataqueEspecial", 1);
+            document.getElementById("disponible").innerHTML = "Ataque Especial disponible en ";
+            document.getElementById("cooldown").innerHTML = this.ataqueEspecialCooldown;
+            this.tiempoCooldown = this.ataqueEspecialCooldown;
+        } else console.log("no puedo atacar");
+    }
+
+    reducirCooldown() {
+        this.tiempoCooldown -= 1;
+    }
+
+    moverPersonaje(teclasPulsadas, camara, delta) {
         this.calcularOffsetDireccion(teclasPulsadas);
         camara.getWorldDirection(this.direccion);
         this.direccion.y = 0;
         this.direccion.normalize();
         this.direccion.applyAxisAngle(this.anguloRotacion, this.direccionOffset);
-        this.newX += this.direccion.x * this.velocidadMovimiento *delta;
+        this.newX += this.direccion.x * this.velocidadMovimiento * delta;
         this.newZ += this.direccion.z * this.velocidadMovimiento * delta;
     }
 
-    interseccionEnemigo (otro) {
+    interseccionEnemigo(otro) {
         var vectorEntreObj = new THREE.Vector2();
         var v_caja = new THREE.Vector3();
         var v_otro = new THREE.Vector3();
         otro.caja.getWorldPosition(v_otro);
         this.caja.getWorldPosition(v_caja);
-        vectorEntreObj.subVectors (new THREE.Vector2 (v_caja.x, v_caja.z),
-                                       new THREE.Vector2 (v_otro.x, v_otro.z));
+        vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
+            new THREE.Vector2(v_otro.x, v_otro.z));
         return (vectorEntreObj.length() < this.caja.geometry.parameters.width); // se puede revisar
     }
 
-    quitarVida(){
+    quitarVida() {
         var dt = this.relojDanio.getDelta();
-        if (dt > 0.3){
-            this.vidas -= 1;
-            if (vidas > 0) this.fadeToAction("recibeGolpe")
+        if (dt > 0.3) {
+            // no se puede recibir daño en mitad de un atauqe especial o durante la animacion de recibir golpe
+            if (this.estado != "ataqueEspecial" && this.estado != "recibeGolpe") {
+                this.vidas -= 1;
+                if (vidas > 0) this.fadeToAction("recibeGolpe")
+            }
         }
 
-        if (vidas < 1){
+        if (vidas < 1) {
             this.fadeToAction("morir");
         }
     }
@@ -248,18 +265,18 @@ class Ronin extends THREE.Object3D {
                 direccion = direccion || value;
             }
         }
-        
+
         var accion = "";
         var sentido = 1;
         if (direccion) {
             this.area.material = this.materialRojo;
             if (teclasPulsadas["w"]) {
                 accion = "correr"
-            }else if (teclasPulsadas["s"]) {
+            } else if (teclasPulsadas["s"]) {
                 accion = "correrAtras";
-            }else if (teclasPulsadas["a"]){
+            } else if (teclasPulsadas["a"]) {
                 accion = "strafe";
-            } else if (teclasPulsadas["d"]){
+            } else if (teclasPulsadas["d"]) {
                 accion = "strafe";
                 sentido = -1;
             }
@@ -268,13 +285,16 @@ class Ronin extends THREE.Object3D {
             sentido = 1;
             accion = "idle";
         }
-                
-        if (teclasPulsadas["b"]){
+
+        if (teclasPulsadas["b"]) {
             accion = "bailecito";
         }
 
         if (this.estado != accion) {
-            if (!this.actions["ataque"].isRunning())
+            if (!(this.actions["ataque"].isRunning() ||
+                this.actions["ataqueEspecial"].isRunning()) || 
+                this.actions["recibeGolpe"].isRunning() || 
+                this.actions["morir"].isRunning())  
                 this.fadeToAction(accion, sentido);
         }
 
@@ -284,7 +304,7 @@ class Ronin extends THREE.Object3D {
         if (this.mixer) this.mixer.update(dt);
 
         var delta = this.clockMovimiento.getDelta();
-        if (direccion){
+        if (direccion) {
             this.moverPersonaje(teclasPulsadas, camara, delta);
         }
         this.roninWrap.position.x = this.newX;
