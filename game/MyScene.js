@@ -47,14 +47,20 @@ class MyScene extends THREE.Scene {
     // Por último creamos el modelo.
     this.clock = new THREE.Clock();
 
-    this.ronin = new Ronin(this.camera);
-    this.motobug = new Motobug();
-    this.ronin.waitLoader();
+    this.ronin = new Ronin(this.camera, this);
     this.add(this.ronin);
+    var vidas = "";
+    for (var i = 0; i < this.ronin.vidas; i++) {
+      vidas += "❤️";
+    }
+    document.getElementById("vidas").innerHTML = vidas;
+    this.motobug = new Motobug();
+    this.motobug.translateZ(10);
+    this.motobug.translateX(10);
     this.add(this.motobug);
     this.teclasPulsadas = {};
 
-    this.roninTarget = new THREE.Vector3();
+
   }
 
   initStats() {
@@ -103,7 +109,7 @@ class MyScene extends THREE.Scene {
   }
 
   createGround() {
-    var gridHelper = new THREE.GridHelper(100, 20);
+    var gridHelper = new THREE.GridHelper(1000, 200);
     this.add(gridHelper);
   }
 
@@ -213,20 +219,21 @@ class MyScene extends THREE.Scene {
     // Se actualiza la posición de la cámara según su controlador
     // this.cameraControl.update();
 
-    // Se actualiza el resto del modelo    
+    // Se actualiza el resto del modelo
     this.ronin.update(this.teclasPulsadas, this.camera);
-    if (this.ronin.interseccionEnemigo(this.motobug)){
-        this.ronin.quitarVida();
-        document.getElementById("colision").innerHTML = "SÍ";
-        var vidas = "";
-        for (var i=0; i < this.ronin.vidas; i++){
-          vidas += "❤️";
-        }
-        document.getElementById("vidas").innerHTML = vidas;
-    }  else{
+    if (this.ronin.interseccionEnemigo(this.motobug)) {
+      this.ronin.quitarVida();
+      document.getElementById("colision").innerHTML = "SÍ";
+      var vidas = "";
+      for (var i = 0; i < this.ronin.vidas; i++) {
+        vidas += "❤️";
+      }
+      document.getElementById("vidas").innerHTML = vidas;
+    } else {
       document.getElementById("colision").innerHTML = "NO";
     }
     this.motobug.update();
+
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render(this, this.getCamera());
@@ -253,7 +260,7 @@ class MyScene extends THREE.Scene {
     this.ronin.atacar(evento);
   }
 
-  ataqueEspecialRoning(evento){
+  ataqueEspecialRoning(evento) {
     this.ronin.ataqueEspecial(evento);
   }
 }
@@ -289,13 +296,13 @@ $(function () {
     var tActual = document.getElementById("cooldown").innerHTML;
     console.log(tActual);
     var tActual = parseInt(tActual);
-    if (tActual > 0){
+    if (tActual > 0) {
       document.getElementById("div-cooldown").style.backgroundColor = "rgba(255,0,0,0.5)";
       document.getElementById("cooldown").innerHTML = (tActual - 1);
       scene.ronin.reducirCooldown();
     }
 
-    if (tActual === 0){
+    if (tActual === 0) {
       document.getElementById("disponible").innerHTML = "Ataque Especial disponible";
       document.getElementById("div-cooldown").style.backgroundColor = "rgba(0,255,0,0.5)";
       document.getElementById("cooldown").innerHTML = "";
