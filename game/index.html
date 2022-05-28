@@ -9,24 +9,54 @@
     <script type="module" src="MyScene.js"></script>
 
     <style>
-        body {
+        body,
+        html {
             margin: 0;
+            height: 100%;
             overflow: hidden;
             cursor: none;
         }
 
-        #div-cooldown{
-            position: absolute; 
-            z-index:100; 
-            bottom: 10%; 
-            right: 1%; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
+        #div-cooldown {
+            position: absolute;
+            z-index: 100;
+            bottom: 10%;
+            right: 1%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             align-content: center;
             border-radius: 0.5em;
             background-color: rgba(255, 0, 0, 0.5);
             padding: 2em;
+        }
+
+
+
+        #fin {
+            display: none;
+            position: absolute;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 3em;
+            z-index: 100;
+            top: 5%;
+            left: 26%;
+            margin: auto;
+            border-radius: 0.5em;
+            background-color: rgba(255, 0, 0, 0.7);
+            padding: 2em;
+        }
+
+        .fin-text {
+            align-items: center;
+            align-self: center;
+            align-content: center;
+        }
+
+        .reiniciar {
+            font-family: 'Courier New', Courier, monospace;
+            padding: 2em;
+            font-size: 1em;
         }
     </style>
 </head>
@@ -52,13 +82,24 @@
         Colisión: <span id="colision"></span>
     </div>
 
-    <div style="position: absolute; z-index:100; top: 1%; left: 1%">
-        <span id="vidas" style="font-size: x-large;color: red;"></span>
+    <div style="position: absolute; z-index:100; bottom: 10%; left: 5%">
+        <span id="vidas" style="font-size: xx-large;color: red;"></span>
     </div>
 
     <div id="div-cooldown">
-        <span id="disponible" style="font-size: x-large; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"></span>
-        <span id="cooldown" style="font-size: x-large; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"></span>
+        <span id="disponible"
+            style="font-size: x-large; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"></span>
+        <span id="cooldown"
+            style="font-size: x-large; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"></span>
+    </div>
+
+    <div id="fin">
+        <div class="fin-text">
+            <h2>Fin del Juego</h2>
+            <h3>Has aguantado rondas!</h3>
+        </div>
+
+        <button class="reiniciar" onclick="window.location.reload();">Empezar de nuevo</button>
     </div>
 </body>
 

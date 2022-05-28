@@ -2,13 +2,14 @@
 // Clases de la biblioteca
 
 import * as THREE from '../libs/three.module.js'
-import { GUI } from '../libs/dat.gui.module.js'
 import { OrbitControls } from '../libs/OrbitControls.js'
 import { Stats } from '../libs/stats.module.js'
+import * as TWEEN from '../libs/tween.esm.js'
 
 // Clases de mi proyecto
 import { Ronin } from './Ronin.js'
 import { Motobug } from './Motobug.js'
+import { Katana } from './Katana.js'
 /// La clase fachada del modelo
 /**
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
@@ -23,9 +24,10 @@ class MyScene extends THREE.Scene {
     this.renderer.outputEncoding = THREE.sRGBEncoding;
 
     // Se añade a la gui los controles para manipular los elementos de esta clase
-    this.gui = this.createGUI();
 
     this.initStats();
+
+    this.background = new THREE.Color(0xFFFFFF);
 
     // Construimos los distinos elementos que tendremos en la escena
 
@@ -54,12 +56,18 @@ class MyScene extends THREE.Scene {
       vidas += "❤️";
     }
     document.getElementById("vidas").innerHTML = vidas;
-    this.motobug = new Motobug();
-    this.motobug.translateZ(10);
-    this.motobug.translateX(10);
-    this.add(this.motobug);
-    this.teclasPulsadas = {};
 
+    this.enemigos = [];
+    var motobug = new Motobug(this);
+    motobug.translateZ(10);
+    motobug.translateX(10);
+
+    this.enemigos.push(motobug);
+    this.enemigos.forEach(enemigo => {
+      this.add(enemigo);
+    });
+
+    this.teclasPulsadas = {};
 
   }
 
@@ -89,14 +97,14 @@ class MyScene extends THREE.Scene {
     //create a perspective camera
     this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
     // También se indica dónde se coloca
-    // this.camera.position.set(-40, 80, -40);
+    this.camera.position.set(-40, 80, -40);
     // Y hacia dónde mira
     var look = new THREE.Vector3(0, 0, 0);
-    // this.camera.lookAt(look);
+    this.camera.lookAt(look);
     // this.camera.rotation.order = "XYZ";
     // this.camera.fov *= 10;
     // this.camera.updateProjectionMatrix();
-    // this.add(this.camera);
+    this.add(this.camera);
 
     // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
     this.cameraControl = new OrbitControls(this.camera, this.renderer.domElement);
@@ -113,34 +121,6 @@ class MyScene extends THREE.Scene {
     this.add(gridHelper);
   }
 
-  createGUI() {
-    // Se crea la interfaz gráfica de usuario
-    var gui = new GUI();
-
-    // La escena le va a añadir sus propios controles. 
-    // Se definen mediante un objeto de control
-    // En este caso la intensidad de la luz y si se muestran o no los ejes
-    this.guiControls = {
-      // En el contexto de una función   this   alude a la función
-      lightIntensity: 0.5,
-      axisOnOff: true
-    }
-
-    // Se crea una sección para los controles de esta clase
-    var folder = gui.addFolder('Luz y Ejes');
-
-    // Se le añade un control para la intensidad de la luz
-    folder.add(this.guiControls, 'lightIntensity', 0, 1, 0.1)
-      .name('Intensidad de la Luz : ')
-      .onChange((value) => this.setLightIntensity(value));
-
-    // Y otro para mostrar u ocultar los ejes
-    folder.add(this.guiControls, 'axisOnOff')
-      .name('Mostrar ejes : ')
-      .onChange((value) => this.setAxisVisible(value));
-
-    return gui;
-  }
 
   createLights() {
     // Se crea una luz ambiental, evita que se vean complentamente negras las zonas donde no incide de manera directa una fuente de luz
@@ -155,7 +135,7 @@ class MyScene extends THREE.Scene {
     // La luz focal, además tiene una posición, y un punto de mira
     // Si no se le da punto de mira, apuntará al (0,0,0) en coordenadas del mundo
     // En este caso se declara como   this.atributo   para que sea un atributo accesible desde otros métodos.
-    this.spotLight = new THREE.SpotLight(0xffffff, this.guiControls.lightIntensity);
+    this.spotLight = new THREE.SpotLight(0xffffff);
     this.spotLight.position.set(60, 60, 40);
     this.add(this.spotLight);
   }
@@ -219,21 +199,24 @@ class MyScene extends THREE.Scene {
     // Se actualiza la posición de la cámara según su controlador
     // this.cameraControl.update();
 
-    // Se actualiza el resto del modelo
-    this.ronin.update(this.teclasPulsadas, this.camera);
-    if (this.ronin.interseccionEnemigo(this.motobug)) {
-      this.ronin.quitarVida();
-      document.getElementById("colision").innerHTML = "SÍ";
-      var vidas = "";
-      for (var i = 0; i < this.ronin.vidas; i++) {
-        vidas += "❤️";
-      }
-      document.getElementById("vidas").innerHTML = vidas;
-    } else {
-      document.getElementById("colision").innerHTML = "NO";
-    }
-    this.motobug.update();
 
+    // Se actualiza el resto del modelo
+    TWEEN.update();
+    this.ronin.update(this.teclasPulsadas, this.camera);
+    this.enemigos.forEach(enemigo => {
+      if (this.ronin.interseccionEnemigo(enemigo)) {
+        this.ronin.quitarVida();
+        document.getElementById("colision").innerHTML = "SÍ";
+        var vidas = "";
+        for (var i = 0; i < this.ronin.vidas; i++) {
+          vidas += "❤️";
+        }
+        document.getElementById("vidas").innerHTML = vidas;
+      } else {
+        document.getElementById("colision").innerHTML = "NO";
+      }
+    });
+    this.enemigos.forEach(enemigo => { enemigo.update()});
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render(this, this.getCamera());
@@ -263,6 +246,11 @@ class MyScene extends THREE.Scene {
   ataqueEspecialRoning(evento) {
     this.ronin.ataqueEspecial(evento);
   }
+
+  matarMotobug() {
+    // this.enemigos[0].morir();
+    // this.enemigos.splice(0);
+  }
 }
 
 /// La función   main
@@ -275,8 +263,12 @@ $(function () {
   window.addEventListener("resize", () => scene.onWindowResize());
   window.addEventListener('keydown', (event) => {
     scene.pulsarTecla(event);
-    if (event.key == "q") {
+    if (event.key === "q") {
       scene.ataqueEspecialRoning(event);
+    }
+    if (event.key === " ") {
+      console.log("muere motobug")
+      scene.matarMotobug();
     }
   }, false);
 

@@ -1,10 +1,14 @@
 import * as THREE from '../libs/three.module.js'
 import {CSG} from '../libs/CSG-v2.js'
+import {Enemigo} from './Enemigo.js'
 
 
-class Motobug extends THREE.Object3D{
-    constructor(){
-        super();
+class Motobug extends Enemigo{
+    constructor(escena){
+        super(escena);
+
+        this.geometrias = [];
+        this.materiales = [];
         // la rueda
         var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 100);
         var texturaRueda = new THREE.TextureLoader().load("../imgs/tire.jpg");
@@ -14,6 +18,10 @@ class Motobug extends THREE.Object3D{
         var ruedaMat = new THREE.MeshToonMaterial({color: "grey", map: texturaRueda});
 
         this.rueda = new THREE.Mesh(ruedaGeo, ruedaMat);
+        this.velocidadRueda = 0.01;
+
+        this.geometrias.push(ruedaGeo);
+        this.materiales.push(ruedaMat);
 
         // el cuerpo
 
@@ -43,7 +51,10 @@ class Motobug extends THREE.Object3D{
         cuerpo.union([cuerpoCentral, cuerpoLat]); 
         this.cuerpoFinal = cuerpo.toMesh();
       
-        
+        this.geometrias.push(cuerpoGeo);
+        this.geometrias.push(cuerpoLatGeo);
+        this.materiales.push(cuerpoMat);
+
         // la cabezaa
         var pathCabeza = new THREE.EllipseCurve(
             0,0,
@@ -63,6 +74,8 @@ class Motobug extends THREE.Object3D{
         var cabezaMat = new THREE.MeshToonMaterial({color: 0x037bfc});
         this.cabeza = new THREE.Mesh(cabezaGeo, cabezaMat);
 
+        this.geometrias.push(cabezaGeo);
+        this.materiales.push(cabezaMat);
 
         // las manchas negras
 
@@ -98,6 +111,13 @@ class Motobug extends THREE.Object3D{
         this.decoraciones.add(this.deco3);
         this.decoraciones.add(this.deco4);
 
+        this.geometrias.push(decoGeo1);
+        this.geometrias.push(decoGeo2);
+        this.geometrias.push(decoGeo3);
+        this.geometrias.push(decoGeo4);
+        this.materiales.push(decoMat);
+
+
         // los ojos
         var ojoGeo1 = new THREE.SphereGeometry(1.5,16,16);
         ojoGeo1.translate(8, 6, -2);
@@ -116,6 +136,13 @@ class Motobug extends THREE.Object3D{
         var pupGeo2 = new THREE.SphereGeometry(.5,16,16);
         pupGeo2.translate(9.5,6, 2);
         this.pup2 = new THREE.Mesh(pupGeo2, pupMat);
+        
+        this.geometrias.push(ojoGeo1);
+        this.geometrias.push(ojoGeo2);
+        this.geometrias.push(pupGeo1);
+        this.geometrias.push(pupGeo2);
+        this.materiales.push(ojoMat);
+        this.materiales.push(pupMat);
 
 
         // los "dientes"
@@ -136,6 +163,9 @@ class Motobug extends THREE.Object3D{
         dienteGeo2.rotateX(-Math.PI/5);
         this.diente2 = new THREE.Mesh(dienteGeo2, ojoMat);
 
+        this.geometrias.push(dienteGeo1);
+        this.geometrias.push(dienteGeo2);
+
 
         // los tubos de escape
         var tuboGeo1 = new THREE.CylinderGeometry(1,1, 5, 16, 16);
@@ -149,14 +179,29 @@ class Motobug extends THREE.Object3D{
         tuboGeo2.translate(-8,3,5);
         this.tubo2 = new THREE.Mesh(tuboGeo2, tuboMat);
 
+        this.geometrias.push(tuboGeo1);
+        this.geometrias.push(tuboGeo2);
+        this.materiales.push(tuboMat);
+
+
         // los brazos
         var brazoGeo1 = new THREE.CylinderGeometry(0.5,0.5,5,16,16);
         brazoGeo1.rotateX(Math.PI/2);
         brazoGeo1.translate(2,3,4);
         var brazoMat = new THREE.MeshToonMaterial({color: "yellow"});
         this.brazo1 = new THREE.Mesh(brazoGeo1, brazoMat);
+
+        var brazoGeo2 = new THREE.CylinderGeometry(0.5,0.5,5,16,16);
+        brazoGeo2.rotateX(Math.PI/2);
+        brazoGeo2.translate(2,3,-4);
+        this.brazo2 = new THREE.Mesh(brazoGeo2, brazoMat);
+
+        this.geometrias.push(brazoGeo1);
+        this.geometrias.push(brazoGeo2);
+        this.materiales.push(brazoMat);
         
         // añadir al objeto
+
         this.add(this.rueda);
         this.add(this.cuerpoFinal);       
         this.add(this.cabeza);
@@ -170,6 +215,7 @@ class Motobug extends THREE.Object3D{
         this.add(this.tubo1);
         this.add(this.tubo2);
         this.add(this.brazo1);
+        this.add(this.brazo2);
 
 
         // caja para las colisiones
@@ -180,13 +226,39 @@ class Motobug extends THREE.Object3D{
         this.caja.name = "cajaMotobug";
         this.add(this.caja);
 
+        this.geometrias.push(this.caja.geometry);
+        this.materiales.push(this.caja.material);
         this.scale.set(0.5,0.5,0.5)
+
+        // barra de vida
+        this.barraVida = [];
+        for(var i = -this.vidas/2+0.5; i < this.vidas/2+0.5; i++){
+            var vida = new THREE.Mesh(
+                new THREE.BoxBufferGeometry(2,2,2),
+                new THREE.MeshBasicMaterial({color: "red"})
+            );
+            vida.position.set(0,12.5,i*4);
+            this.barraVida.push(vida);
+            this.add(vida);
+        }
     }
 
-
+    morir(){
+        this.vidas = 0;
+        console.log("me muero...");
+        super.morir();
+        this.velocidadRueda = 0;
+        this.barraVida.forEach(vida => {
+            if (!(this.vidas > this.barraVida.indexOf(vida))){
+                vida.material.transparent = true;
+                vida.material.opacity = 0;
+            }
+        })
+    }
+    
     
     update(){
-        this.rueda.rotation.z -= 0.01;
+        this.rueda.rotation.z -= this.velocidadRueda;
     }
 }
 

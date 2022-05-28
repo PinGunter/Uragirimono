@@ -1,12 +1,13 @@
 /* Personaje principal del juego */
 
 import * as THREE from '../libs/three.module.js';
-import {GLTFLoader} from '../libs/GLTFLoader.js';
+import * as TWEEN from '../libs/tween.esm.js'
+import { GLTFLoader } from '../libs/GLTFLoader.js';
+import { Katana } from './Katana.js';
 
-const Arriba = 0;
-const Izquierda = 1;
-const Abajo = 2;
-const Derecha = 3;
+var morirAction;
+const TotalVidas = 10;
+const MaxCombo = 3;
 
 class Ronin extends THREE.Object3D {
     constructor(camera) {
@@ -19,21 +20,12 @@ class Ronin extends THREE.Object3D {
         this.newX = 0;
         this.newZ = 0;
         this.camera = camera;
-        this.vidas = 3;
+        this.vidas = TotalVidas;
 
         this.ataqueEspecialCooldown = 5;
         this.tiempoCooldown = 0;
 
-        this.materialRojo = new THREE.MeshToonMaterial({color: "red", opacity: 0.5, transparent: true});
-        this.materialAmarillo = new THREE.MeshToonMaterial({color: "yellow", opacity: 0.5, transparent: true});
-        this.area = new THREE.Mesh(
-            new THREE.TorusGeometry(5, 0.5, 16, 100),
-            this.materialAmarillo
-        );
-        this.area.rotateX(Math.PI / 2);
-
         this.ronin = new THREE.Object3D(); // el personaje en sí
-        this.ronin.add(this.area)
 
         this.roninWrap = new THREE.Object3D();
         this.roninWrap.add(this.ronin);
@@ -43,19 +35,18 @@ class Ronin extends THREE.Object3D {
         // caja que envuelve al personaje para facilitar deteccion de colisiones
         this.caja = new THREE.Mesh(
             new THREE.BoxGeometry(6, 6, 6),
-            new THREE.MeshNormalMaterial({transparent: true, opacity: 0})
+            new THREE.MeshNormalMaterial({ transparent: true, opacity: 0 })
         )
         this.caja.name = "cajaRonin";
         this.roninWrap.add(this.caja);
         this.camera.position.set(50, 90, 0);
         this.roninWrap.add(this.camera);
         var target = new THREE.Vector3(0, 0, 0);
-        // this.camera.getWorldPosition(target);
         this.camera.lookAt(target);
 
         this.puntero = new THREE.Mesh(
             new THREE.TorusGeometry(1, 0.2, 16, 100),
-            new THREE.MeshToonMaterial({color: 0xff12de})
+            new THREE.MeshToonMaterial({ color: 0xff12de })
         );
         this.puntero.rotateX(Math.PI / 2);
         this.add(this.puntero);
@@ -64,16 +55,32 @@ class Ronin extends THREE.Object3D {
         this.ultimaDireccion = new THREE.Vector3();
         this.direccion = new THREE.Vector3();
         this.anguloRotacion = new THREE.Vector3(0, 1, 0);
-        this.quaternonRotacion = new THREE.Quaternion();
-        this.objCamara = new THREE.Vector3();
         this.velocidadMovimiento = 30;
         this.velocidadTrans = 0.2;
 
         var diferidos = [];
         diferidos.push(this, this.loadModel());
-        $.when.apply(this, diferidos).done( () => {
+        $.when.apply(this, diferidos).done(() => {
             console.log("modelo cargado");
         });
+
+        this.barraVida = [];
+        for(var i = -this.vidas/2+0.5; i < this.vidas/2+0.5; i++){
+            var vida = new THREE.Mesh(
+                new THREE.BoxBufferGeometry(2,2,2),
+                new THREE.MeshBasicMaterial({color: "red"})
+            );
+            vida.position.set(0,12.5,i*4);
+            this.barraVida.push(vida);
+            // this.roninWrap.add(vida);
+        }
+
+        //katana
+        this.katana = new Katana();
+        this.katanaWrap = new THREE.Object3D();
+        this.katanaWrap.add(this.katana);
+        this.katana.position.set(-4,5,4);
+        this.ronin.add(this.katanaWrap);
     }
 
     loadModel() {
@@ -126,6 +133,13 @@ class Ronin extends THREE.Object3D {
         //    y se gestiona a través de dicho accionador
         // El mixer es el controlador general de los accionadores particulares
         this.mixer = new THREE.AnimationMixer(model);
+        this.mixer.addEventListener( 'finished', function( e ) {
+            if (e.action === morirAction){
+                document.body.style.cursor = "auto";
+                console.log("Muero")
+                document.getElementById("fin").style.display = "block";
+            }
+        } )
 
         // El siguiente diccionario contendrá referencias a los diferentes accionadores particulares 
         // El diccionario Lo usaremos para dirigirnos a ellos por los nombres de las animaciones que gestionan
@@ -152,6 +166,8 @@ class Ronin extends THREE.Object3D {
             //    para formar el listado de la interfaz de usuario
             this.clipNames.push(clip.name);
         }
+
+        morirAction = this.actions["morir"];
 
     }
 
@@ -215,7 +231,68 @@ class Ronin extends THREE.Object3D {
     }
 
     atacar(evento) {
+        this.katana.canHit = true;
+        this.katana.detenerAnimacion = true;
         this.fadeToAction("ataque", 1);
+        var origenR = {a:0, d: -4};
+        var destinoR = {a:-Math.PI/2, d: 6}
+        var rotacion = new TWEEN.Tween(origenR)
+            .to(destinoR, 475)
+            .onStart(() => {
+                this.atacando = false;
+                this.puedoAnimar = false;
+            })
+            .easing(TWEEN.Easing.Linear.None)
+            .onUpdate(() => {
+                this.katana.position.x = origenR.d;
+                this.katana.rotation.z = origenR.a;
+                this.katana.rotation.x = origenR.a;
+            });
+        // ahora la rotacion para el ataque
+        var origenAt = {a:0};
+        var destinoAt = {a:-Math.PI/2}
+        var ataque = new TWEEN.Tween(origenAt)
+            .to(destinoAt, 300)
+            .onStart(() => {
+                this.katana.atacando = false;
+                this.katana.puedoAnimar = false;
+            })
+            .easing(TWEEN.Easing.Linear.None)
+            .onUpdate(() => {
+                this.katanaWrap.rotation.y = origenAt.a;
+            });
+
+        // vuelta a la normalidad
+        var origenVuelta = {
+            x: this.katana.rotation.x,
+            y: this.katanaWrap.rotation.y,
+            z: this.katana.rotation.z,
+            d: this.katana.position.x
+        }
+        var destinoVuelta = {
+            x: 0,
+            y: 0,
+            z: 0,
+            d: -4
+        }
+
+        var vuelta = new TWEEN.Tween(origenVuelta)
+            .to(destinoVuelta, 300)
+            .easing(TWEEN.Easing.Linear.None)
+            .onUpdate(() => {
+                this.katanaWrap.rotation.y = origenVuelta.y;
+                this.katana.rotation.x = origenVuelta.x;
+                this.katana.rotation.z = origenVuelta.z;
+                this.katana.position.x = origenVuelta.d;
+                this.katana.canHit = false;
+                this.katana.puedoAnimar = true;
+                this.katana.atacando = false;
+                this.katana.detenerAnimacion = false;
+            })
+        ataque.chain(vuelta);
+        rotacion.chain(ataque);
+        rotacion.start();
+
     }
 
     ataqueEspecial(evento) {
@@ -253,76 +330,100 @@ class Ronin extends THREE.Object3D {
     }
 
     quitarVida() {
-        if (!(this.actions["recibeGolpe"].isRunning() || this.actions["ataqueEspecial"].isRunning())) {
+        if ( this.vidas > 0 && !(this.actions["recibeGolpe"].isRunning() || this.actions["ataqueEspecial"].isRunning() || this.actions["morir"].isRunning())) {
             this.vidas -= 1;
             if (this.vidas > 0) {
                 this.fadeToAction("recibeGolpe", 1);
-                console.log("recibo daño")
-            }
-        }
+                this.barraVida[TotalVidas - this.vidas -1].material.transparent = true;
+                this.barraVida[TotalVidas - this.vidas -1].material.opacity = 0;
+            } else {
+                this.barraVida[TotalVidas - this.vidas -1].material.transparent = true;
+                this.barraVida[TotalVidas - this.vidas -1].material.opacity = 0;
+                this.fadeToAction("morir", 1);
 
-        if (this.vidas < 1) {
-            this.fadeToAction("morir", 1);
-            console.log("Muero")
+            }
         }
     }
 
+    katanaIdle(){
+        var origen = {p: 3};
+        var destino = {p: 6};
+
+        var movimiento = new TWEEN.Tween(origen)
+            .to(destino, 1500)
+            .easing(TWEEN.Easing.Quadratic.InOut)
+            .onStart(() => {
+                this.katanaWrap.puedoAnimar = false;
+            })
+            .onUpdate(() => {
+                if (!this.katana.detenerAnimacion) // por si lo cambiamos desde otro sitio
+                    this.katanaWrap.position.y = origen.p;
+            })
+            .onComplete(() => {
+                this.katana.puedoAnimar = true;
+            })
+            .repeat(1)
+            .yoyo(true);
+        movimiento.start();
+    }
+
     update(teclasPulsadas, camara) {
-            if ((this.vidas > 0 || this.actions["morir"].isRunning())) {
-                var direccion = false;
-                for (const [key, value] of Object.entries(teclasPulsadas)) {
-                    if (key === "w" || key === "s" || key === "a" || key === "d") {
-                        direccion = direccion || value;
-                    }
+        if ((this.vidas > 0 || this.actions["morir"].isRunning())) {
+            var direccion = false;
+            for (const [key, value] of Object.entries(teclasPulsadas)) {
+                if (key === "w" || key === "s" || key === "a" || key === "d") {
+                    direccion = direccion || value;
                 }
+            }
 
-                var accion = "";
-                var sentido = 1;
-                if (direccion) {
-                    this.area.material = this.materialRojo;
-                    if (teclasPulsadas["w"]) {
-                        accion = "correr"
-                    } else if (teclasPulsadas["s"]) {
-                        accion = "correrAtras";
-                    } else if (teclasPulsadas["a"]) {
-                        accion = "strafe";
-                    } else if (teclasPulsadas["d"]) {
-                        accion = "strafe";
-                        sentido = -1;
-                    }
-                } else {
-                    this.area.material = this.materialAmarillo;
-                    sentido = 1;
-                    accion = "idle";
+            var accion = "";
+            var sentido = 1;
+            if (direccion) {
+                if (teclasPulsadas["w"]) {
+                    accion = "correr"
+                } else if (teclasPulsadas["s"]) {
+                    accion = "correrAtras";
+                } else if (teclasPulsadas["a"]) {
+                    accion = "strafe";
+                } else if (teclasPulsadas["d"]) {
+                    accion = "strafe";
+                    sentido = -1;
                 }
+            } else {
+                sentido = 1;
+                accion = "idle";
+            }
 
-                if (teclasPulsadas["b"]) {
-                    accion = "bailecito";
-                }
+            if (teclasPulsadas["b"]) {
+                accion = "bailecito";
+            }
 
-                if (this.estado != accion) {
-                    if (!(this.actions["ataque"].isRunning() ||
-                        this.actions["ataqueEspecial"].isRunning() ||
-                        this.actions["recibeGolpe"].isRunning() ||
-                        this.actions["morir"].isRunning()))
-                        this.fadeToAction(accion, sentido);
-                }
+            if (this.estado != accion) {
+                if (!(this.actions["ataque"].isRunning() ||
+                    this.actions["ataqueEspecial"].isRunning() ||
+                    this.actions["recibeGolpe"].isRunning() ||
+                    this.actions["morir"].isRunning()))
+                    this.fadeToAction(accion, sentido);
+            }
 
 
-                // Hay que pedirle al mixer que actualice las animaciones que controla
-                var dt = this.clock.getDelta();
-                if (this.mixer) this.mixer.update(dt);
+            // Hay que pedirle al mixer que actualice las animaciones que controla
+            var dt = this.clock.getDelta();
+            if (this.mixer) this.mixer.update(dt);
 
-                var delta = this.clockMovimiento.getDelta();
-                if (direccion) {
-                    this.moverPersonaje(teclasPulsadas, camara, delta);
-                }
-                this.roninWrap.position.x = this.newX;
-                this.roninWrap.position.z = this.newZ;
+            var delta = this.clockMovimiento.getDelta();
+            if (direccion) {
+                this.moverPersonaje(teclasPulsadas, camara, delta);
+            }
+            this.roninWrap.position.x = this.newX;
+            this.roninWrap.position.z = this.newZ;
 
+            if (this.katana.puedoAnimar && !this.katana.atacando){
+                this.katanaIdle();
             }
         }
+    }
 
 }
 
-export {Ronin}
+export { Ronin }
