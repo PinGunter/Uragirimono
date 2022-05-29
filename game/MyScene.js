@@ -61,6 +61,7 @@ class MyScene extends THREE.Scene {
     var motobug = new Motobug(this);
     motobug.translateZ(10);
     motobug.translateX(10);
+    motobug.translateY(3.75);
 
     this.enemigos.push(motobug);
     this.enemigos.forEach(enemigo => {
@@ -215,8 +216,15 @@ class MyScene extends THREE.Scene {
       } else {
         document.getElementById("colision").innerHTML = "NO";
       }
+
+      if (this.ronin.katana.interseccionEnemigo(enemigo)){
+        enemigo.quitarVida();
+        if (enemigo.estoyMuerto()){
+          this.enemigos.splice(this.enemigos.indexOf(enemigo));
+        }
+      }
     });
-    this.enemigos.forEach(enemigo => { enemigo.update()});
+    this.enemigos.forEach(enemigo => { enemigo.update() });
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render(this, this.getCamera());
@@ -247,10 +255,6 @@ class MyScene extends THREE.Scene {
     this.ronin.ataqueEspecial(evento);
   }
 
-  matarMotobug() {
-    // this.enemigos[0].morir();
-    // this.enemigos.splice(0);
-  }
 }
 
 /// La función   main
@@ -265,10 +269,6 @@ $(function () {
     scene.pulsarTecla(event);
     if (event.key === "q") {
       scene.ataqueEspecialRoning(event);
-    }
-    if (event.key === " ") {
-      console.log("muere motobug")
-      scene.matarMotobug();
     }
   }, false);
 
