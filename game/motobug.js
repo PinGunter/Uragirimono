@@ -4,13 +4,13 @@ import { Enemigo } from './Enemigo.js'
 
 
 class Motobug extends Enemigo {
-    constructor(escena) {
-        super(escena);
+    constructor(escena, vidas) {
+        super(escena, vidas);
 
         this.geometrias = [];
         this.materiales = [];
         // la rueda
-        var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 100);
+        var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 30);
         var texturaRueda = new THREE.TextureLoader().load("../imgs/tire.jpg");
         texturaRueda.wrapS = THREE.RepeatWrapping;
         texturaRueda.wrapT = THREE.RepeatWrapping;
@@ -18,7 +18,7 @@ class Motobug extends Enemigo {
         var ruedaMat = new THREE.MeshToonMaterial({ color: "grey", map: texturaRueda });
 
         this.rueda = new THREE.Mesh(ruedaGeo, ruedaMat);
-        this.velocidadRueda = 0.01;
+        this.velocidadRueda = 0.05;
 
         this.geometrias.push(ruedaGeo);
         this.materiales.push(ruedaMat);
@@ -32,7 +32,7 @@ class Motobug extends Enemigo {
             true,
             0
         )
-        var puntos2d = curvaCuerpo.getPoints(50);
+        var puntos2d = curvaCuerpo.getPoints(20);
         var formaCuerpo = new THREE.Shape(puntos2d);
         var puntos3d = [];
         puntos2d.forEach(p => {
@@ -63,8 +63,8 @@ class Motobug extends Enemigo {
             true,
             0
         )
-        puntos2d = pathCabeza.getPoints(50);
-        var formaCabeza = new THREE.Shape(curvaCuerpo.getPoints(50));
+        puntos2d = pathCabeza.getPoints(20);
+        var formaCabeza = new THREE.Shape(curvaCuerpo.getPoints(20));
         puntos3d = [];
         puntos2d.forEach(p => {
             puntos3d.push(new THREE.Vector3(p.x, p.y, 0));
@@ -79,26 +79,26 @@ class Motobug extends Enemigo {
 
         // las manchas negras
 
-        var decoGeo1 = new THREE.CylinderGeometry(2, 2, 0.75, 16, 16);
+        var decoGeo1 = new THREE.CylinderGeometry(2, 2, 0.75, 7, 7);
         var decoMat = new THREE.MeshToonMaterial({ color: 0x333232 });
         decoGeo1.rotateX(Math.PI / 3);
         decoGeo1.translate(0, 7.5, 4.5);
         this.deco1 = new THREE.Mesh(decoGeo1, decoMat);
 
 
-        var decoGeo2 = new THREE.CylinderGeometry(2, 2, 0.75, 16, 16);
+        var decoGeo2 = new THREE.CylinderGeometry(2, 2, 0.75, 7, 7);
         decoGeo2.rotateX(-Math.PI / 3);
         decoGeo2.translate(0, 7.5, -4.5);
         this.deco2 = new THREE.Mesh(decoGeo2, decoMat);
 
-        var decoGeo3 = new THREE.CylinderGeometry(2, 2, 0.75, 16, 16);
+        var decoGeo3 = new THREE.CylinderGeometry(2, 2, 0.75, 7, 7);
         decoGeo3.rotateX(Math.PI / 4);
         decoGeo3.rotateZ(Math.PI / 2);
         decoGeo3.rotateX(-Math.PI / 5);
         decoGeo3.translate(-8, 4, 3);
         this.deco3 = new THREE.Mesh(decoGeo3, decoMat);
 
-        var decoGeo4 = new THREE.CylinderGeometry(2, 2, 0.75, 16, 16);
+        var decoGeo4 = new THREE.CylinderGeometry(2, 2, 0.75, 7, 7);
         decoGeo4.rotateX(-Math.PI / 4);
         decoGeo4.rotateZ(Math.PI / 2);
         decoGeo4.rotateX(Math.PI / 5);
@@ -119,21 +119,21 @@ class Motobug extends Enemigo {
 
 
         // los ojos
-        var ojoGeo1 = new THREE.SphereGeometry(1.5, 16, 16);
+        var ojoGeo1 = new THREE.SphereGeometry(1.5, 5, 5);
         ojoGeo1.translate(8, 6, -2);
         var ojoMat = new THREE.MeshToonMaterial({ color: "white" });
         this.ojo1 = new THREE.Mesh(ojoGeo1, ojoMat);
 
-        var ojoGeo2 = new THREE.SphereGeometry(1.5, 16, 16);
+        var ojoGeo2 = new THREE.SphereGeometry(1.5, 5, 5);
         ojoGeo2.translate(8, 6, 2);
         this.ojo2 = new THREE.Mesh(ojoGeo2, ojoMat);
 
-        var pupGeo1 = new THREE.SphereGeometry(.5, 16, 16);
+        var pupGeo1 = new THREE.SphereGeometry(.5, 5, 5);
         pupGeo1.translate(9.5, 6, -2);
         var pupMat = new THREE.MeshToonMaterial({ color: "black" });
         this.pup1 = new THREE.Mesh(pupGeo1, pupMat);
 
-        var pupGeo2 = new THREE.SphereGeometry(.5, 16, 16);
+        var pupGeo2 = new THREE.SphereGeometry(.5, 5, 5);
         pupGeo2.translate(9.5, 6, 2);
         this.pup2 = new THREE.Mesh(pupGeo2, pupMat);
 
@@ -168,13 +168,13 @@ class Motobug extends Enemigo {
 
 
         // los tubos de escape
-        var tuboGeo1 = new THREE.CylinderGeometry(1, 1, 5, 16, 16);
+        var tuboGeo1 = new THREE.CylinderGeometry(1, 1, 5, 8, 8);
         var tuboMat = new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load("../imgs/tubo.jpg"), metalness: 1 });
         tuboGeo1.rotateZ(-Math.PI / 2 - Math.PI / 6);
         tuboGeo1.translate(-8, 3, -5);
         this.tubo1 = new THREE.Mesh(tuboGeo1, tuboMat);
 
-        var tuboGeo2 = new THREE.CylinderGeometry(1, 1, 5, 16, 16);
+        var tuboGeo2 = new THREE.CylinderGeometry(1, 1, 5, 8, 8);
         tuboGeo2.rotateZ(-Math.PI / 2 - Math.PI / 6);
         tuboGeo2.translate(-8, 3, 5);
         this.tubo2 = new THREE.Mesh(tuboGeo2, tuboMat);
@@ -185,13 +185,13 @@ class Motobug extends Enemigo {
 
 
         // los brazos
-        var brazoGeo1 = new THREE.CylinderGeometry(0.5, 0.5, 5, 16, 16);
+        var brazoGeo1 = new THREE.CylinderGeometry(0.5, 0.5, 5, 8, 8);
         brazoGeo1.rotateX(Math.PI / 2);
         brazoGeo1.translate(2, 3, 4);
         var brazoMat = new THREE.MeshToonMaterial({ color: "yellow" });
         this.brazo1 = new THREE.Mesh(brazoGeo1, brazoMat);
 
-        var brazoGeo2 = new THREE.CylinderGeometry(0.5, 0.5, 5, 16, 16);
+        var brazoGeo2 = new THREE.CylinderGeometry(0.5, 0.5, 5, 8, 8);
         brazoGeo2.rotateX(Math.PI / 2);
         brazoGeo2.translate(2, 3, -4);
         this.brazo2 = new THREE.Mesh(brazoGeo2, brazoMat);
@@ -229,43 +229,19 @@ class Motobug extends Enemigo {
         this.geometrias.push(this.caja.geometry);
         this.materiales.push(this.caja.material);
         this.scale.set(0.5, 0.5, 0.5)
+        this.translateY(3.75);
 
-        // barra de vida
-        this.barraVida = [];
-        for (var i = -this.vidasTotales / 2 + 0.5; i < this.vidasTotales / 2 + 0.5; i++) {
-            var vida = new THREE.Mesh(
-                new THREE.BoxBufferGeometry(2, 2, 2),
-                new THREE.MeshBasicMaterial({ color: "red" })
-            );
-            vida.position.set(0, 12.5, i * 4);
-            this.barraVida.push(vida);
-            this.add(vida);
         }
 
-        // reloj para el daño
-        this.clock = new THREE.Clock();
-    }
 
-    quitarVida(){
-        var dt = this.clock.getDelta();
-        if (dt > 0.4) {
-            this.vidasActuales -= 1;
-            this.barraVida[this.vidasTotales - this.vidasActuales - 1].material.transparent = true;
-            this.barraVida[this.vidasTotales - this.vidasActuales - 1].material.opacity = 0;
-
-            if (this.vidasActuales === 0) {
-                this.morir();
-            }
-        }
-    }
-
+    
     morir() {
         console.log("me muero...");
         super.morir();
         this.velocidadRueda = 0;
     }
 
-    estoyMuerto () {
+    estoyMuerto() {
         return this.vidasActuales === 0;
     }
 

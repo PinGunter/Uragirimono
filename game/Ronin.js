@@ -6,7 +6,7 @@ import { GLTFLoader } from '../libs/GLTFLoader.js';
 import { Katana } from './Katana.js';
 
 var morirAction;
-const TotalVidas = 10;
+const TotalVidas = 3;
 const MaxCombo = 3;
 
 class Ronin extends THREE.Object3D {
@@ -21,6 +21,8 @@ class Ronin extends THREE.Object3D {
         this.newZ = 0;
         this.camera = camera;
         this.vidas = TotalVidas;
+        this.rondaActual = 1;
+        this.danio = 2;
 
         this.ataqueEspecialCooldown = 5;
         this.tiempoCooldown = 0;
@@ -134,11 +136,13 @@ class Ronin extends THREE.Object3D {
         //    y se gestiona a través de dicho accionador
         // El mixer es el controlador general de los accionadores particulares
         this.mixer = new THREE.AnimationMixer(model);
+        var that = this;
         this.mixer.addEventListener('finished', function (e) {
             if (e.action === morirAction) {
                 document.body.style.cursor = "auto";
                 console.log("Muero")
                 document.getElementById("fin").style.display = "block";
+                document.getElementById("rondas-aguantadas").innerText = `Has aguantado ${that.rondaActual} rondas`;
             }
         })
 
@@ -231,10 +235,10 @@ class Ronin extends THREE.Object3D {
         }
     }
 
-    restaurarKatana(){
-        this.katana.position.set(1,7,-1);
+    restaurarKatana() {
+        this.katana.position.set(1, 7, -1);
         this.katana.rotation.x = Math.PI;
-        this.katana.rotation.z =  - Math.PI / 6;
+        this.katana.rotation.z = - Math.PI / 6;
         this.katana.canHit = false;
         this.katana.puedoAnimar = true;
         this.katana.atacando = false;
@@ -242,84 +246,85 @@ class Ronin extends THREE.Object3D {
     }
 
     atacar(evento) {
-        this.katana.detenerAnimacion = true;
-        this.fadeToAction("ataque", 1);
-        // primero tenemos que desenvainarla
-        var origenDesen = {x: Math.PI, z: -Math.PI / 6, dx: 1, dz: -1};
-        var destinoDesen = {x: 0, z: 0, dx: -4, dz: 4};
-        var desevainar = new TWEEN.Tween(origenDesen)
-            .to(destinoDesen, 1000)
-            .onStart(() => {
-                this.katana.puedoAnimar = false;
-            })
-            .easing(TWEEN.Easing.Linear.None)
-            .onUpdate(() => {
-                this.katana.position.x = origenDesen.dx;
-                this.katana.position.z = origenDesen.dz;
-                this.katana.rotation.x = origenDesen.x;
-                this.katana.rotation.z = origenDesen.z;
-            })
-            .onComplete(() => {
-                this.restaurarKatana();
-            })
+        if (!this.actions['morir'].isRunning() && this.vidas > 0) {
+            this.katana.detenerAnimacion = true;
+            this.fadeToAction("ataque", 1);
+            // primero tenemos que desenvainarla
+            var origenDesen = { x: Math.PI, z: -Math.PI / 6, dx: 1, dz: -1 };
+            var destinoDesen = { x: 0, z: 0, dx: -4, dz: 4 };
+            var desevainar = new TWEEN.Tween(origenDesen)
+                .to(destinoDesen, 100)
+                .onStart(() => {
+                    this.katana.puedoAnimar = false;
+                })
+                .easing(TWEEN.Easing.Linear.None)
+                .onUpdate(() => {
+                    this.katana.position.x = origenDesen.dx;
+                    this.katana.position.z = origenDesen.dz;
+                    this.katana.rotation.x = origenDesen.x;
+                    this.katana.rotation.z = origenDesen.z;
+                })
+                .onComplete(() => {
+                    this.restaurarKatana();
+                })
 
-        var origenR = { a: 0, d: -4 };
-        var destinoR = { a: -Math.PI / 2, d: 6 }
-        var rotacion = new TWEEN.Tween(origenR)
-            .to(destinoR, 1000)
-            .easing(TWEEN.Easing.Linear.None)
-            .onUpdate(() => {
-                this.katana.position.x = origenR.d;
-                this.katana.rotation.z = origenR.a;
-                this.katana.rotation.x = origenR.a;
-            });
-        // ahora la rotacion para el ataque
-        var origenAt = { a: 0 };
-        var destinoAt = { a: -Math.PI / 2 }
-        var ataque = new TWEEN.Tween(origenAt)
-            .to(destinoAt, 1000)
-            .onStart(() => {
-                this.katana.canHit = true;
-            })
-            .easing(TWEEN.Easing.Linear.None)
-            .onUpdate(() => {
-                this.katanaWrap.rotation.y = origenAt.a;
-            });
+            var origenR = { a: 0, d: -4 };
+            var destinoR = { a: -Math.PI / 2, d: 6 }
+            var rotacion = new TWEEN.Tween(origenR)
+                .to(destinoR, 100)
+                .easing(TWEEN.Easing.Linear.None)
+                .onUpdate(() => {
+                    this.katana.position.x = origenR.d;
+                    this.katana.rotation.z = origenR.a;
+                    this.katana.rotation.x = origenR.a;
+                });
+            // ahora la rotacion para el ataque
+            var origenAt = { a: 0 };
+            var destinoAt = { a: -Math.PI / 2 }
+            var ataque = new TWEEN.Tween(origenAt)
+                .to(destinoAt, 100)
+                .onStart(() => {
+                    this.katana.canHit = true;
+                })
+                .easing(TWEEN.Easing.Linear.None)
+                .onUpdate(() => {
+                    this.katanaWrap.rotation.y = origenAt.a;
+                });
 
-        // vuelta a la normalidad
-        var origenVuelta = {
-            x: this.katana.rotation.x,
-            y: this.katanaWrap.rotation.y,
-            z: this.katana.rotation.z,
-            d: this.katana.position.x
-        }
-        var destinoVuelta = {
-            x: Math.PI,
-            y: 0,
-            z: -Math.PI/6,
-            dx: 1,
-            dz: -1
-        }
-
-        var vuelta = new TWEEN.Tween(origenVuelta)
-            .to(destinoVuelta, 1000)
-            .easing(TWEEN.Easing.Linear.None)
-            .onUpdate(() => {
-                this.katanaWrap.rotation.y = origenVuelta.y;
-                this.katana.rotation.x = origenVuelta.x;
-                this.katana.rotation.z = origenVuelta.z;
-                this.katana.position.x = origenVuelta.d;
-
-            })
-            .onComplete(() => {
-                this.restaurarKatana();
+            // vuelta a la normalidad
+            var origenVuelta = {
+                x: this.katana.rotation.x,
+                y: this.katanaWrap.rotation.y,
+                z: this.katana.rotation.z,
+                d: this.katana.position.x
             }
-    )
-        desevainar.chain(rotacion);
-        rotacion.chain(ataque);
-        ataque.chain(vuelta);
-        desevainar.start();
+            var destinoVuelta = {
+                x: Math.PI,
+                y: 0,
+                z: -Math.PI / 6,
+                dx: 1,
+                dz: -1
+            }
 
+            var vuelta = new TWEEN.Tween(origenVuelta)
+                .to(destinoVuelta, 100)
+                .easing(TWEEN.Easing.Linear.None)
+                .onUpdate(() => {
+                    this.katanaWrap.rotation.y = origenVuelta.y;
+                    this.katana.rotation.x = origenVuelta.x;
+                    this.katana.rotation.z = origenVuelta.z;
+                    this.katana.position.x = origenVuelta.d;
+
+                })
+                .onComplete(() => {
+                    this.restaurarKatana();
+                }
+                )
+            desevainar.chain(rotacion);
+            rotacion.chain(ataque);
+            ataque.chain(vuelta);
+            desevainar.start();
+        }
     }
 
     ataqueEspecial(evento) {
@@ -369,32 +374,6 @@ class Ronin extends THREE.Object3D {
                 this.fadeToAction("morir", 1);
 
             }
-        }
-    }
-
-    katanaIdle() {
-        var origen = { p: 3 };
-        var destino = { p: 6 };
-
-        var movimiento = new TWEEN.Tween(origen)
-            .to(destino, 750)
-            .easing(TWEEN.Easing.Quadratic.InOut)
-            .onStart(() => {
-                this.katana.position.y = 3;
-                this.katana.puedoAnimar = false;
-            })
-            .onUpdate(() => {
-                this.katana.position.y = origen.p;
-
-            })
-            .onComplete(() => {
-                this.katana.puedoAnimar = true;
-                this.katana.position.y = 3;
-            })
-            .repeat(1)
-            .yoyo(true);
-        if (!this.katana.atacando) {
-            movimiento.start();
         }
     }
 

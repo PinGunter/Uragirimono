@@ -58,6 +58,29 @@
             padding: 2em;
             font-size: 1em;
         }
+
+        .ronda-class {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: x-large;
+            z-index: 100;
+            top: 1%;
+            left: 1%;
+            position: absolute;
+        }
+
+        #loading {
+            display: none;
+            position: absolute;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 3em;
+            z-index: 100;
+            top: 5%;
+            left: 26%;
+            margin: auto;
+            border-radius: 0.5em;
+            background-color: rgba(255, 255, 255, 1);
+            padding: 2em;
+        }
     </style>
 </head>
 
@@ -78,10 +101,6 @@
     <div id="WebGL-output">
     </div>
 
-    <div style="position: absolute; z-index:100; top: 50%">
-        Colisión: <span id="colision"></span>
-    </div>
-
     <div style="position: absolute; z-index:100; bottom: 10%; left: 5%">
         <span id="vidas" style="font-size: xx-large;color: red;"></span>
     </div>
@@ -93,10 +112,21 @@
             style="font-size: x-large; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"></span>
     </div>
 
+    <div class="ronda-class">
+        <h2 id="ronda"></h2>
+        <h3 id="enemigos"></h3>
+    </div>
+
+    <div id="loading">
+        <div class="fin-text">
+            <h2>Cargando...</h2>
+        </div>
+    </div>
+
     <div id="fin">
         <div class="fin-text">
             <h2>Fin del Juego</h2>
-            <h3>Has aguantado rondas!</h3>
+            <h3 id="rondas-aguantadas">Has aguantado rondas!</h3>
         </div>
 
         <button class="reiniciar" onclick="window.location.reload();">Empezar de nuevo</button>

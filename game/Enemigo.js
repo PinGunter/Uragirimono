@@ -2,13 +2,27 @@ import * as THREE from '../libs/three.module.js';
 import * as TWEEN from '../libs/tween.esm.js';
 
 class Enemigo extends THREE.Object3D {
-    constructor(escena) {
+    constructor(escena, vidas) {
         super();
         this.escena = escena;
-        this.vidasTotales = 4;
+        this.vidasTotales = vidas;
         this.vidasActuales = this.vidasTotales;
-        this.materiales = [];
-        this.geometrias = [];
+
+        // barra de vida
+        this.barraVida = [];
+        for (var i = -this.vidasTotales / 2 + 0.5; i < this.vidasTotales / 2 + 0.5; i++) {
+            var vida = new THREE.Mesh(
+                new THREE.BoxBufferGeometry(2, 2, 2),
+                new THREE.MeshBasicMaterial({ color: "red" })
+            );
+            vida.position.set(0, 12.5, i * 4);
+            this.barraVida.push(vida);
+            this.add(vida);
+        }
+
+        // reloj para el daño
+        this.clock = new THREE.Clock();
+        this.clock.getDelta();
     }
 
     morir() {
@@ -32,8 +46,7 @@ class Enemigo extends THREE.Object3D {
                 this.scale.set(origenD.e, origenD.e, origenD.e);
             })
             .onComplete(() => {
-                this.eliminarGeometria();
-                this.vidasTotales = 0;
+                this.vidasActuales = 0;
                 this.escena.remove(this);
             })
 
@@ -41,14 +54,26 @@ class Enemigo extends THREE.Object3D {
         rotacion.start();
     }
 
-    eliminarGeometria() {
-        this.geometrias.forEach(geo => {
-            geo.dispose();
-        });
-        this.materiales.forEach(mat => {
-            mat.dispose();
-        });
+
+    quitarVida(d) {
+        var dt = this.clock.getDelta();
+        if (dt > 0.4) {
+            for (var i = 0; i < d; i++) {
+                this.vidasActuales -= 1;
+                if (this.vidasActuales < 0) {
+                    this.vidasActuales = 0;
+                }
+                this.barraVida[this.vidasTotales - this.vidasActuales - 1].material.transparent = true;
+                this.barraVida[this.vidasTotales - this.vidasActuales - 1].material.opacity = 0;
+                if (this.vidasActuales === 0) {
+                    this.morir();
+                    break;
+                }
+            }
+        }
+
     }
+
 }
 
 export { Enemigo };

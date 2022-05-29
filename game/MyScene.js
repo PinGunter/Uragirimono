@@ -15,6 +15,7 @@ import { Katana } from './Katana.js'
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
  */
 
+
 class MyScene extends THREE.Scene {
   constructor(myCanvas) {
     super();
@@ -41,34 +42,26 @@ class MyScene extends THREE.Scene {
     // Un suelo 
     this.createGround();
 
-    // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
-    this.axis = new THREE.AxesHelper(5);
-    this.add(this.axis);
-
 
     // Por último creamos el modelo.
     this.clock = new THREE.Clock();
 
     this.ronin = new Ronin(this.camera, this);
+
     this.add(this.ronin);
     var vidas = "";
     for (var i = 0; i < this.ronin.vidas; i++) {
       vidas += "❤️";
     }
     document.getElementById("vidas").innerHTML = vidas;
-
+    this.ronda = 1;
+    this.ronin.rondaActual = this.ronda;
     this.enemigos = [];
-    var motobug = new Motobug(this);
-    motobug.translateZ(10);
-    motobug.translateX(10);
-    motobug.translateY(3.75);
-
-    this.enemigos.push(motobug);
-    this.enemigos.forEach(enemigo => {
-      this.add(enemigo);
-    });
-
+    this.enemigosMuertos = [];
+    this.rellenarEnemigos();
     this.teclasPulsadas = {};
+    document.getElementById("enemigos").innerText = `Quedan ${this.enemigos.length} enemigos`;
+    document.getElementById("ronda").innerText = `Ronda: ${this.ronda}`;
 
   }
 
@@ -101,20 +94,20 @@ class MyScene extends THREE.Scene {
     this.camera.position.set(-40, 80, -40);
     // Y hacia dónde mira
     var look = new THREE.Vector3(0, 0, 0);
-    this.camera.lookAt(look);
+    // this.camera.lookAt(look);
     // this.camera.rotation.order = "XYZ";
     // this.camera.fov *= 10;
     // this.camera.updateProjectionMatrix();
-    this.add(this.camera);
-
-    // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
-    this.cameraControl = new OrbitControls(this.camera, this.renderer.domElement);
-    // Se configuran las velocidades de los movimientos
-    this.cameraControl.rotateSpeed = 5;
-    this.cameraControl.zoomSpeed = -2;
-    this.cameraControl.panSpeed = 0.5;
-    // Debe orbitar con respecto al punto de mira de la cámara
-    this.cameraControl.target = look;
+    // this.add(this.camera);
+    //
+    // // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
+    // this.cameraControl = new OrbitControls(this.camera, this.renderer.domElement);
+    // // Se configuran las velocidades de los movimientos
+    // this.cameraControl.rotateSpeed = 5;
+    // this.cameraControl.zoomSpeed = -2;
+    // this.cameraControl.panSpeed = 0.5;
+    // // Debe orbitar con respecto al punto de mira de la cámara
+    // this.cameraControl.target = look;
   }
 
   createGround() {
@@ -139,14 +132,6 @@ class MyScene extends THREE.Scene {
     this.spotLight = new THREE.SpotLight(0xffffff);
     this.spotLight.position.set(60, 60, 40);
     this.add(this.spotLight);
-  }
-
-  setLightIntensity(valor) {
-    this.spotLight.intensity = valor;
-  }
-
-  setAxisVisible(valor) {
-    this.axis.visible = valor;
   }
 
   createRenderer(myCanvas) {
@@ -191,6 +176,40 @@ class MyScene extends THREE.Scene {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
+  eliminarMuertos() {
+    this.enemigos = []
+    this.enemigosMuertos = []
+  }
+
+  rellenarEnemigos() {
+    for (var i = 0; i < this.ronda * 3; i++) {
+      var motobug = new Motobug(this, this.ronda);
+      var x = this.ronin.position.x;
+      var z = this.ronin.position.z;
+      while (x > this.ronin.position.x - 5 && x < this.ronin.position.x + 5 &&
+        z > this.ronin.position.z - 5 && z < this.ronin.position.z + 5) {
+        z = (Math.random() * 100) - 100;
+        x = (Math.random() * 100) - 100;
+      }
+      motobug.translateX(x);
+      motobug.translateZ(z);
+      this.enemigos.push(motobug);
+    }
+    this.enemigos.forEach(enemigo => {
+      this.add(enemigo);
+    })
+  }
+
+  siguienteRonda() {
+    this.ronda += 1;
+    this.ronin.rondaActual = this.ronda;
+    this.eliminarMuertos();
+    document.getElementById("ronda").innerText = `Ronda: ${this.ronda}`;
+    this.rellenarEnemigos();
+
+  }
+
+
   update() {
 
     if (this.stats) this.stats.update();
@@ -205,29 +224,30 @@ class MyScene extends THREE.Scene {
     TWEEN.update();
     this.ronin.update(this.teclasPulsadas, this.camera);
     this.enemigos.forEach(enemigo => {
-      if (this.ronin.interseccionEnemigo(enemigo)) {
-        this.ronin.quitarVida();
-        document.getElementById("colision").innerHTML = "SÍ";
-        var vidas = "";
-        for (var i = 0; i < this.ronin.vidas; i++) {
-          vidas += "❤️";
+      if (!enemigo.estoyMuerto()) {
+        if (this.ronin.interseccionEnemigo(enemigo)) {
+          this.ronin.quitarVida();
+          var vidas = "";
+          for (var i = 0; i < this.ronin.vidas; i++) {
+            vidas += "❤️";
+          }
+          document.getElementById("vidas").innerHTML = vidas;
         }
-        document.getElementById("vidas").innerHTML = vidas;
-      } else {
-        document.getElementById("colision").innerHTML = "NO";
-      }
 
-      if (this.ronin.katana.interseccionEnemigo(enemigo)){
-        enemigo.quitarVida();
-        if (enemigo.estoyMuerto()){
-          this.enemigos.splice(this.enemigos.indexOf(enemigo));
+        if (this.ronin.katana.interseccionEnemigo(enemigo)) {
+          enemigo.quitarVida(this.ronin.danio);
+          if (enemigo.estoyMuerto()) {
+            this.enemigosMuertos.push(this.enemigos.indexOf(enemigo));
+          }
         }
       }
     });
     this.enemigos.forEach(enemigo => { enemigo.update() });
-
+    if (this.enemigosMuertos.length === this.enemigos.length && this.enemigos.length > 0 && this.enemigosMuertos.length > 0)
+      this.siguienteRonda();
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render(this, this.getCamera());
+    document.getElementById("enemigos").innerText = `Quedan ${this.enemigos.length - this.enemigosMuertos.length} enemigos`;
 
     // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
     // Literalmente le decimos al navegador: "La próxima vez que haya que refrescar la pantalla, llama al método que te indico".
@@ -261,6 +281,7 @@ class MyScene extends THREE.Scene {
 $(function () {
 
   // Se instancia la escena pasándole el  div  que se ha creado en el html para visualizar
+
   var scene = new MyScene("#WebGL-output");
 
   // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
