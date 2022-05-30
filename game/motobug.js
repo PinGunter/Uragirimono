@@ -1,6 +1,7 @@
 import * as THREE from '../libs/three.module.js'
 import { CSG } from '../libs/CSG-v2.js'
 import { Enemigo } from './Enemigo.js'
+import * as TWEEN from '../libs/tween.esm.js';
 
 
 class Motobug extends Enemigo {
@@ -9,6 +10,7 @@ class Motobug extends Enemigo {
 
         this.geometrias = [];
         this.materiales = [];
+        this.figura = new THREE.Object3D();
         // la rueda
         var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 30);
         var texturaRueda = new THREE.TextureLoader().load("../imgs/tire.jpg");
@@ -202,21 +204,27 @@ class Motobug extends Enemigo {
 
         // añadir al objeto
 
-        this.add(this.rueda);
-        this.add(this.cuerpoFinal);
-        this.add(this.cabeza);
-        this.add(this.ojo1);
-        this.add(this.ojo2);
-        this.add(this.pup1);
-        this.add(this.pup2);
-        this.add(this.decoraciones);
-        this.add(this.diente1);
-        this.add(this.diente2);
-        this.add(this.tubo1);
-        this.add(this.tubo2);
-        this.add(this.brazo1);
-        this.add(this.brazo2);
+        this.figura.add(this.rueda);
+        this.figura.add(this.cuerpoFinal);
+        this.figura.add(this.cabeza);
+        this.figura.add(this.ojo1);
+        this.figura.add(this.ojo2);
+        this.figura.add(this.pup1);
+        this.figura.add(this.pup2);
+        this.figura.add(this.decoraciones);
+        this.figura.add(this.diente1);
+        this.figura.add(this.diente2);
+        this.figura.add(this.tubo1);
+        this.figura.add(this.tubo2);
+        this.figura.add(this.brazo1);
+        this.figura.add(this.brazo2);
+        
+        this.figura.rotateY(-Math.PI / 2);
+        this.add(this.figura);
+        
 
+        this.scale.set(0.5, 0.5, 0.5)
+        this.figura.translateY(3.75);
 
         // caja para las colisiones
         this.caja = new THREE.Mesh(
@@ -224,17 +232,42 @@ class Motobug extends Enemigo {
             new THREE.MeshNormalMaterial({ transparent: true, opacity: 0 })
         )
         this.caja.name = "cajaMotobug";
-        this.add(this.caja);
+        this.figura.add(this.caja);
 
         this.geometrias.push(this.caja.geometry);
         this.materiales.push(this.caja.material);
-        this.scale.set(0.5, 0.5, 0.5)
-        this.translateY(3.75);
 
-        }
+        // movimiento
+        var curva = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
+            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
+            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
+            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
+            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
+        ], true);
 
+        var posOrigen = new THREE.Vector3(0,0,0);
+        
+        var origen = {p:0};
+        var destino = {p:1};
+        var movimientoIda = new TWEEN.Tween(origen)
+        .to(destino, Math.random() * 15000 + 1000)
+        .onStart(() =>  {
+            posOrigen.copy(this.position);
+        })
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate( () => {
+            var t = origen.p;
+            var posicion = curva.getPointAt(t);
+            this.position.copy(posicion);
+            var tangente = curva.getTangentAt(t);
+            posicion.add(tangente);
+            this.lookAt(posicion);
+        })
+        .repeat(Infinity)
+        .start();
+    }
 
-    
     morir() {
         console.log("me muero...");
         super.morir();

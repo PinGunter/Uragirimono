@@ -60,12 +60,12 @@ class Ronin extends THREE.Object3D {
         this.velocidadMovimiento = 30;
         this.velocidadTrans = 0.2;
 
+        this.ready = false;
         var diferidos = [];
         diferidos.push(this, this.loadModel());
         $.when.apply(this, diferidos).done(() => {
             console.log("modelo cargado");
         });
-
         this.barraVida = [];
         for (var i = -this.vidas / 2 + 0.5; i < this.vidas / 2 + 0.5; i++) {
             var vida = new THREE.Mesh(
@@ -113,6 +113,7 @@ class Ronin extends THREE.Object3D {
                 that.fadeToAction("idle", true, 1.0); // animacion inicials
 
                 document.getElementById("info").innerHTML = "";
+                that.ready = true;
             },
             function (xhr) {
                 document.getElementById("info").innerHTML = "Cargando: " + (xhr.loaded / 14490616 * 100) + "%";
@@ -351,14 +352,16 @@ class Ronin extends THREE.Object3D {
     }
 
     interseccionEnemigo(otro) {
-        var vectorEntreObj = new THREE.Vector2();
-        var v_caja = new THREE.Vector3();
-        var v_otro = new THREE.Vector3();
-        otro.caja.getWorldPosition(v_otro);
-        this.caja.getWorldPosition(v_caja);
-        vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
-            new THREE.Vector2(v_otro.x, v_otro.z));
-        return (vectorEntreObj.length() < this.caja.geometry.parameters.width); // se puede revisar
+        if (this.ready) {
+            var vectorEntreObj = new THREE.Vector2();
+            var v_caja = new THREE.Vector3();
+            var v_otro = new THREE.Vector3();
+            otro.caja.getWorldPosition(v_otro);
+            this.caja.getWorldPosition(v_caja);
+            vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
+                new THREE.Vector2(v_otro.x, v_otro.z));
+            return (vectorEntreObj.length() < this.caja.geometry.parameters.width); // se puede revisar
+        }
     }
 
     quitarVida() {
