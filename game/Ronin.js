@@ -244,6 +244,7 @@ class Ronin extends THREE.Object3D {
         this.katana.puedoAnimar = true;
         this.katana.atacando = false;
         this.katana.detenerAnimacion = false;
+        this.katanaWrap.rotation.y = this.katanaWrap.rotation.x = this.katanaWrap.rotation.z = 0;
     }
 
     atacar(evento) {
@@ -251,39 +252,45 @@ class Ronin extends THREE.Object3D {
             this.katana.detenerAnimacion = true;
             this.fadeToAction("ataque", 1);
             // primero tenemos que desenvainarla
-            var origenDesen = { x: Math.PI, z: -Math.PI / 6, dx: 1, dz: -1 };
-            var destinoDesen = { x: 0, z: 0, dx: -4, dz: 4 };
+            // como en el nier, desaparece de la espalda para aparecer inmediatamente
+            // en la posicion de ataque
+            // cuando el ataque termina vuelve a aparecer en el espalda
+
+            var escaladoOriginal = this.katana.scale.x;
+            var origenDesen = { e: escaladoOriginal };
+            var destinoDesen = { e: 0 };
             var desevainar = new TWEEN.Tween(origenDesen)
-                .to(destinoDesen, 100)
+                .to(destinoDesen, 300)
                 .onStart(() => {
                     this.katana.puedoAnimar = false;
                 })
                 .easing(TWEEN.Easing.Linear.None)
                 .onUpdate(() => {
-                    this.katana.position.x = origenDesen.dx;
-                    this.katana.position.z = origenDesen.dz;
-                    this.katana.rotation.x = origenDesen.x;
-                    this.katana.rotation.z = origenDesen.z;
+                    this.katana.scale.set(origenDesen.e, origenDesen.e, origenDesen.e);
                 })
                 .onComplete(() => {
-                    this.restaurarKatana();
+                    this.katana.rotation.x = -Math.PI / 2;
                 })
 
-            var origenR = { a: 0, d: -4 };
-            var destinoR = { a: -Math.PI / 2, d: 6 }
-            var rotacion = new TWEEN.Tween(origenR)
-                .to(destinoR, 100)
-                .easing(TWEEN.Easing.Linear.None)
+            // ahora aparece en el sitio preparado
+            var origenAparecer = { e: 0, x: this.katana.position.x, z: this.katana.position.z };
+            var destinoAparecer = { e: escaladoOriginal, x: 4, z: 4 };
+            var aparecer = new TWEEN.Tween(origenAparecer)
+                .to(destinoAparecer, 300)
+                .onStart(() => {
+                    this.katana.position.x = destinoAparecer.x;
+                    this.katana.position.z = destinoAparecer.z;
+                })
                 .onUpdate(() => {
-                    this.katana.position.x = origenR.d;
-                    this.katana.rotation.z = origenR.a;
-                    this.katana.rotation.x = origenR.a;
-                });
+                    this.katana.scale.set(origenAparecer.e, origenAparecer.e, origenAparecer.e);
+                })
+
+
             // ahora la rotacion para el ataque
             var origenAt = { a: 0 };
             var destinoAt = { a: -Math.PI / 2 }
             var ataque = new TWEEN.Tween(origenAt)
-                .to(destinoAt, 100)
+                .to(destinoAt, 150)
                 .onStart(() => {
                     this.katana.canHit = true;
                 })
@@ -292,38 +299,35 @@ class Ronin extends THREE.Object3D {
                     this.katanaWrap.rotation.y = origenAt.a;
                 });
 
-            // vuelta a la normalidad
-            var origenVuelta = {
-                x: this.katana.rotation.x,
-                y: this.katanaWrap.rotation.y,
-                z: this.katana.rotation.z,
-                d: this.katana.position.x
-            }
-            var destinoVuelta = {
-                x: Math.PI,
-                y: 0,
-                z: -Math.PI / 6,
-                dx: 1,
-                dz: -1
-            }
-
+            // vuelta a la normalidad 
+            // primero desaparece y luego vuelve a aparecer
+            var origenVuelta = { e: escaladoOriginal }
+            var destinoVuelta = { e: 0 }
             var vuelta = new TWEEN.Tween(origenVuelta)
-                .to(destinoVuelta, 100)
-                .easing(TWEEN.Easing.Linear.None)
+                .to(destinoVuelta, 300)
+                .onStart(() => {
+                    this.katana.canHit = false;
+                })
                 .onUpdate(() => {
-                    this.katanaWrap.rotation.y = origenVuelta.y;
-                    this.katana.rotation.x = origenVuelta.x;
-                    this.katana.rotation.z = origenVuelta.z;
-                    this.katana.position.x = origenVuelta.d;
-
+                    this.katana.scale.set(origenVuelta.e, origenVuelta.e, origenVuelta.e);
                 })
                 .onComplete(() => {
                     this.restaurarKatana();
-                }
-                )
-            desevainar.chain(rotacion);
-            rotacion.chain(ataque);
+                })
+
+            // vuelve a aparece en la espalda
+
+            var origenEspalda = { e: 0 }
+            var destinoEspalda = { e: escaladoOriginal }
+            var vueltaEspalda = new TWEEN.Tween(origenEspalda)
+                .to(destinoEspalda, 300)
+                .onUpdate(() => {
+                    this.katana.scale.set(origenEspalda.e, origenEspalda.e, origenEspalda.e);
+                })
+            desevainar.chain(aparecer);
+            aparecer.chain(ataque);
             ataque.chain(vuelta);
+            vuelta.chain(vueltaEspalda);
             desevainar.start();
         }
     }

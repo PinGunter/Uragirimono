@@ -218,10 +218,10 @@ class Motobug extends Enemigo {
         this.figura.add(this.tubo2);
         this.figura.add(this.brazo1);
         this.figura.add(this.brazo2);
-        
+
         this.figura.rotateY(-Math.PI / 2);
         this.add(this.figura);
-        
+
 
         this.scale.set(0.5, 0.5, 0.5)
         this.figura.translateY(3.75);
@@ -239,33 +239,33 @@ class Motobug extends Enemigo {
 
         // movimiento
         var curva = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
-            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
-            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
-            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
-            new THREE.Vector3(Math.random() * 100 - 100,3.75, Math.random() * 100 -100),
+            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
+            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
+            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
+            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
+            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
         ], true);
 
-        var posOrigen = new THREE.Vector3(0,0,0);
-        
-        var origen = {p:0};
-        var destino = {p:1};
+        var posOrigen = new THREE.Vector3(0, 0, 0);
+
+        var origen = { p: 0 };
+        var destino = { p: 1 };
         var movimientoIda = new TWEEN.Tween(origen)
-        .to(destino, Math.random() * 15000 + 1000)
-        .onStart(() =>  {
-            posOrigen.copy(this.position);
-        })
-        .easing(TWEEN.Easing.Linear.None)
-        .onUpdate( () => {
-            var t = origen.p;
-            var posicion = curva.getPointAt(t);
-            this.position.copy(posicion);
-            var tangente = curva.getTangentAt(t);
-            posicion.add(tangente);
-            this.lookAt(posicion);
-        })
-        .repeat(Infinity)
-        .start();
+            .to(destino, Math.random() * 15000 + 1000)
+            .onStart(() => {
+                posOrigen.copy(this.position);
+            })
+            .easing(TWEEN.Easing.Linear.None)
+            .onUpdate(() => {
+                var t = origen.p;
+                var posicion = curva.getPointAt(t);
+                this.position.copy(posicion);
+                var tangente = curva.getTangentAt(t);
+                posicion.add(tangente);
+                this.lookAt(posicion);
+            })
+            .repeat(Infinity)
+            .start();
     }
 
     morir() {
