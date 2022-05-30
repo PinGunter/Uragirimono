@@ -6,8 +6,8 @@ import { GLTFLoader } from '../libs/GLTFLoader.js';
 import { Katana } from './Katana.js';
 
 var morirAction;
-const TotalVidas = 3;
-const MaxCombo = 3;
+const TotalVidas = 5;
+var escaladoOriginal;
 
 class Ronin extends THREE.Object3D {
     constructor(camera) {
@@ -79,6 +79,7 @@ class Ronin extends THREE.Object3D {
 
         //katana
         this.katana = new Katana();
+        escaladoOriginal = this.katana.scale.x;
         this.katanaWrap = new THREE.Object3D();
         this.katanaWrap.add(this.katana);
         // this.katana.position.set(-4, 5, 4); // posicion de ataque
@@ -240,6 +241,7 @@ class Ronin extends THREE.Object3D {
         this.katana.position.set(1, 7, -1);
         this.katana.rotation.x = Math.PI;
         this.katana.rotation.z = - Math.PI / 6;
+        this.katana.scale.set(escaladoOriginal, escaladoOriginal, escaladoOriginal);
         this.katana.canHit = false;
         this.katana.puedoAnimar = true;
         this.katana.atacando = false;
@@ -256,7 +258,6 @@ class Ronin extends THREE.Object3D {
             // en la posicion de ataque
             // cuando el ataque termina vuelve a aparecer en el espalda
 
-            var escaladoOriginal = this.katana.scale.x;
             var origenDesen = { e: escaladoOriginal };
             var destinoDesen = { e: 0 };
             var desevainar = new TWEEN.Tween(origenDesen)
