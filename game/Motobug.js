@@ -251,7 +251,7 @@ class Motobug extends Enemigo {
         var origen = { p: 0 };
         var destino = { p: 1 };
         var movimientoIda = new TWEEN.Tween(origen)
-            .to(destino, Math.random() * 15000 + 1000)
+            .to(destino, Math.random() * 10000 + 5000)
             .onStart(() => {
                 posOrigen.copy(this.position);
             })

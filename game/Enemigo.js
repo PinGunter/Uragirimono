@@ -13,7 +13,7 @@ class Enemigo extends THREE.Object3D {
         for (var i = -this.vidasTotales / 2 + 0.5; i < this.vidasTotales / 2 + 0.5; i++) {
             var vida = new THREE.Mesh(
                 new THREE.BoxBufferGeometry(2, 2, 2),
-                new THREE.MeshBasicMaterial({ color: "red" })
+                new THREE.MeshToonMaterial({ color: "red" })
             );
             vida.position.set(i * 4, 17, 0);
             this.barraVida.push(vida);
