@@ -9,7 +9,6 @@ import * as TWEEN from '../libs/tween.esm.js'
 // Clases de mi proyecto
 import { Ronin } from './Ronin.js'
 import { Motobug } from './Motobug.js'
-import { Flecha } from './Flecha.js'
 /// La clase fachada del modelo
 /**
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
@@ -46,8 +45,7 @@ class MyScene extends THREE.Scene {
         // Por último creamos el modelo.
         this.clock = new THREE.Clock();
 
-        this.flecha = new Flecha();
-        this.add(this.flecha);
+        
         this.teclasPulsadas = {};
         this.ronin = new Ronin(this.camera, this);
         this.enemigos = [];
@@ -291,7 +289,7 @@ $(function () {
 
     // Se instancia la escena pasándole el  div  que se ha creado en el html para visualizar
 
-    var scene = new MyScene("#WebGL-output", true);
+    var scene = new MyScene("#WebGL-output", false);
 
     // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
     window.addEventListener("resize", () => scene.onWindowResize());

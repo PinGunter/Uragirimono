@@ -230,10 +230,10 @@ class Ronin extends THREE.Object3D {
             var puntoInterseccion = new THREE.Vector3();
             raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0)), puntoInterseccion);
             this.puntero.position.copy(new THREE.Vector3(puntoInterseccion.x, this.altura, puntoInterseccion.z));
-            this.ultimaDireccion.x = this.puntero.position.x;
-            this.ultimaDireccion.y = this.altura;
-            this.ultimaDireccion.z = this.puntero.position.z;
-            this.ronin.rotation.y = Math.atan2((this.puntero.position.x - this.ronin.position.x), (this.puntero.position.z - this.ronin.position.z));
+            var coordenadasRoninGlobales = new THREE.Vector3();
+            this.ronin.getWorldPosition(coordenadasRoninGlobales);
+
+            this.ronin.rotation.y = Math.atan2((this.puntero.position.x - coordenadasRoninGlobales.x), (this.puntero.position.z - coordenadasRoninGlobales.z));
         }
     }
 
