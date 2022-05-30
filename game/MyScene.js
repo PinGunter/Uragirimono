@@ -9,7 +9,6 @@ import * as TWEEN from '../libs/tween.esm.js'
 // Clases de mi proyecto
 import { Ronin } from './Ronin.js'
 import { Motobug } from './Motobug.js'
-import { Katana } from './Katana.js'
 /// La clase fachada del modelo
 /**
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
