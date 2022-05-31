@@ -228,7 +228,7 @@ class Motobug extends Enemigo {
 
         // caja para las colisiones
         this.caja = new THREE.Mesh(
-            new THREE.BoxGeometry(13, 13, 13),
+            new THREE.BoxGeometry(18, 13, 18),
             new THREE.MeshNormalMaterial({ transparent: true, opacity: 0 })
         )
         this.caja.name = "cajaMotobug";
@@ -236,6 +236,7 @@ class Motobug extends Enemigo {
 
         this.geometrias.push(this.caja.geometry);
         this.materiales.push(this.caja.material);
+
 
         // movimiento
         var curva = new THREE.CatmullRomCurve3([
@@ -251,7 +252,7 @@ class Motobug extends Enemigo {
         var origen = { p: 0 };
         var destino = { p: 1 };
         var movimientoIda = new TWEEN.Tween(origen)
-            .to(destino, Math.random() * 10000 + 5000)
+            .to(destino, Math.random() * 10000 + 10000)
             .onStart(() => {
                 posOrigen.copy(this.position);
             })
@@ -264,8 +265,8 @@ class Motobug extends Enemigo {
                 posicion.add(tangente);
                 this.lookAt(posicion);
             })
-            .repeat(Infinity)
-            .start();
+            // .repeat(Infinity)
+            // .start();
     }
 
     morir() {

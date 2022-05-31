@@ -2,9 +2,10 @@ import * as THREE from '../libs/three.module.js';
 import * as TWEEN from '../libs/tween.esm.js';
 
 class Flecha extends THREE.Object3D {
-    constructor() {
+    constructor(parentNode, enemigos) {
         super();
-
+        this.parentNode = parentNode;
+        this.enemigos = enemigos;
         // primero modelamos la flecha
         var cuerpoGeo = new THREE.CylinderGeometry(0.5, 0.5, 7, 8);
         cuerpoGeo.rotateZ(Math.PI / 2);
@@ -19,9 +20,9 @@ class Flecha extends THREE.Object3D {
         colaGeo2.rotateZ(-Math.PI / 2);
         colaGeo2.rotateX(-Math.PI / 2);
         colaGeo2.translate(-5, 0, 0);
-        var matPunta = new THREE.MeshToonMaterial({ color: "red" });
-        var c1 = new THREE.Mesh(colaGeo1, matPunta);
-        var c2 = new THREE.Mesh(colaGeo2, matPunta);
+        var colaMat = new THREE.MeshToonMaterial({ color: "red" });
+        var c1 = new THREE.Mesh(colaGeo1, colaMat);
+        var c2 = new THREE.Mesh(colaGeo2, colaMat);
         this.cola = new THREE.Group();
         this.cola.add(c1);
         this.cola.add(c2);
@@ -44,27 +45,100 @@ class Flecha extends THREE.Object3D {
         var colisionMat = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 });
         this.caja = new THREE.Mesh(colisionGeo, colisionMat);
 
-        this.add(this.punta);
-        this.add(this.cuerpo);
-        this.add(this.cola);
-        this.add(this.caja);
+        this.geometrias = [];
+        this.materiales = [];
+        this.geometrias.push(cuerpoGeo);
+        this.geometrias.push(colaGeo1);
+        this.geometrias.push(colaGeo2);
+        this.geometrias.push(puntaGeo);
+        this.materiales.push(matCuerpo);
+        this.materiales.push(colaMat);
+        this.materiales.push(puntaMat);
 
-        this.disparar(new THREE.Vector3(0, 0, 0), new THREE.Vector3(100, 0, 100), -Math.PI / 4);
+
+        this.wrap = new THREE.Object3D();
+        this.wrap.add(this.punta);
+        this.wrap.add(this.cuerpo);
+        this.wrap.add(this.cola);
+        this.wrap.add(this.caja);
+
+        this.add(this.wrap);
+
+        this.rotateY(-Math.PI / 2)
+        this.scale.set(0.3, 0.3, 0.3);
 
     }
 
+    // TODO: ajustar destino cuando haya colisiones de mapa, pasarle el punto de colision de la pared.
+    // podrá atacar a hasta 3 enemigos por flecha, sino sería demasiad poderoso
     disparar(posicion, destino, angulo) {
+
+        var hitsEnemigos = 0;
+
+        var origenE = { e: 0 };
+        var destinoE = { e: this.scale.x };
+        var aparecer = new TWEEN.Tween(origenE)
+            .to(destinoE, 275)
+            .easing(TWEEN.Easing.Linear.None)
+            .onStart(() => {
+                this.wrap.rotation.y = angulo;
+                this.position.copy(posicion.x, 10, posicion.z);
+            })
+            .onUpdate(() => {
+                this.scale.set(origenE.e, origenE.e, origenE.e)
+            })
+
+        origenE = { e: this.scale.x };
+        var desaparecer = new TWEEN.Tween(origenE)
+            .to({ e: 0 }, 100)
+            .easing(TWEEN.Easing.Linear.None)
+            .onUpdate(() => {
+                this.scale.set(origenE.e, origenE.e, origenE.e)
+            })
+            .onComplete(() => {
+                this.geometrias.forEach(g => {
+                    g.dispose();
+                })
+                this.materiales.forEach(m => {
+                    m.dispose();
+                })
+                this.parentNode.remove(this);
+            }
+            )
+
+
         var origen = { x: posicion.x, z: posicion.z };
-        var desti = { x: destino.x, z: destino.z };
+        var desti = { x: (posicion.x + destino.x), z: (posicion.z + destino.z) };
         var moverse = new TWEEN.Tween(origen)
-        .to(desti, 10000)
-        .onStart(() => {
-            this.rotation.y = angulo;
-        })
-        .onUpdate(() => {
-            this.position.set(origen.x, 0, origen.z);
-        }
-        ).start();
+            .to(desti, 1000)
+            .onStart(() => {
+                console.log("disparando");
+                // console.log(this.rotation.y);
+            })
+            .onUpdate(() => {
+                this.position.set(origen.x, 0, origen.z);
+                this.enemigos.forEach(otro => {
+                    if (hitsEnemigos < 3) {
+                        var vectorEntreObj = new THREE.Vector2();
+                        var v_caja = new THREE.Vector3();
+                        var v_otro = new THREE.Vector3();
+                        otro.caja.getWorldPosition(v_otro);
+                        this.caja.getWorldPosition(v_caja);
+                        vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
+                            new THREE.Vector2(v_otro.x, v_otro.z));
+                        if (vectorEntreObj.length() < 4) {
+                            if (otro.quitarVida(1))
+                                hitsEnemigos++;
+                        }
+                    }
+                })
+            })
+
+
+
+        aparecer.chain(moverse);
+        moverse.chain(desaparecer);
+        aparecer.start();
     }
 
 }

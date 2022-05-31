@@ -4,14 +4,16 @@ import * as THREE from '../libs/three.module.js';
 import * as TWEEN from '../libs/tween.esm.js'
 import { GLTFLoader } from '../libs/GLTFLoader.js';
 import { Katana } from './Katana.js';
+import { Flecha } from './Flecha.js';
 
 var morirAction;
 const TotalVidas = 5;
 var escaladoOriginal;
 
 class Ronin extends THREE.Object3D {
-    constructor(camera) {
+    constructor(camera, escena) {
         super();
+        this.escena = escena;
         this.estado = "idle";
         this.clock = new THREE.Clock();
         this.clockMovimiento = new THREE.Clock();
@@ -182,8 +184,11 @@ class Ronin extends THREE.Object3D {
         const toPlay = this.actions[name];
         const current = this.actions[this.estado];
         current.fadeOut(this.velocidadTrans);
-        toPlay.setEffectiveTimeScale(sentido);
-        if (name === "ataque" || name === "ataqueEspecial" || name === "recibeGolpe" || name === "morir")
+        if (name === "disparar")
+            toPlay.setEffectiveTimeScale(2);
+        else
+            toPlay.setEffectiveTimeScale(sentido);
+        if (name === "ataque" || name === "disparar" || name === "recibeGolpe" || name === "morir")
             toPlay.setLoop(THREE.LoopOnce);
         else
             toPlay.setLoop(THREE.Repeat);
@@ -229,7 +234,7 @@ class Ronin extends THREE.Object3D {
             raycaster.setFromCamera(mouse, camara);
             var puntoInterseccion = new THREE.Vector3();
             raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0)), puntoInterseccion);
-            this.puntero.position.copy(new THREE.Vector3(puntoInterseccion.x, this.altura, puntoInterseccion.z));
+            this.puntero.position.copy(new THREE.Vector3(puntoInterseccion.x, 0, puntoInterseccion.z));
             var coordenadasRoninGlobales = new THREE.Vector3();
             this.ronin.getWorldPosition(coordenadasRoninGlobales);
 
@@ -333,6 +338,25 @@ class Ronin extends THREE.Object3D {
         }
     }
 
+    disparar() {
+        if (!this.actions['morir'].isRunning() && this.vidas > 0) {
+            this.fadeToAction("disparar", 1)
+            var posicionGlobalRonin = new THREE.Vector3();
+            this.ronin.getWorldPosition(posicionGlobalRonin);
+            var direccion = new THREE.Vector3(
+                this.puntero.position.x - posicionGlobalRonin.x,
+                10,
+                this.puntero.position.z - posicionGlobalRonin.z
+            )
+            // direccion = direccion.normalize();
+            var angulo = Math.atan2((this.puntero.position.x - posicionGlobalRonin.x), (this.puntero.position.z - posicionGlobalRonin.z));
+            var flecha = new Flecha(this, this.escena.enemigos);
+            this.add(flecha);
+            flecha.disparar(posicionGlobalRonin, direccion, angulo);
+
+        }
+    }
+
     ataqueEspecial(evento) {
         if (this.tiempoCooldown == 0) {
             this.fadeToAction("ataqueEspecial", 1);
@@ -418,7 +442,7 @@ class Ronin extends THREE.Object3D {
 
             if (this.estado != accion) {
                 if (!(this.actions["ataque"].isRunning() ||
-                    this.actions["ataqueEspecial"].isRunning() ||
+                    this.actions["disparar"].isRunning() ||
                     this.actions["recibeGolpe"].isRunning() ||
                     this.actions["morir"].isRunning()))
                     this.fadeToAction(accion, sentido);

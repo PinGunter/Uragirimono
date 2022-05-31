@@ -45,7 +45,7 @@ class MyScene extends THREE.Scene {
         // Por último creamos el modelo.
         this.clock = new THREE.Clock();
 
-        
+
         this.teclasPulsadas = {};
         this.ronin = new Ronin(this.camera, this);
         this.enemigos = [];
@@ -92,7 +92,7 @@ class MyScene extends THREE.Scene {
         //create a perspective camera
         this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
         // También se indica dónde se coloca
-        this.camera.position.set(-40, 80, -40);
+        this.camera.position.set(40, 80, 40);
         // Y hacia dónde mira
         var look = new THREE.Vector3(0, 0, 0);
         if (this.debug) {
@@ -249,7 +249,7 @@ class MyScene extends THREE.Scene {
             this.enemigos.forEach(enemigo => { enemigo.update() });
             if (this.enemigosMuertos.length === this.enemigos.length && this.enemigos.length > 0 && this.enemigosMuertos.length > 0)
                 this.siguienteRonda();
-        } else{
+        } else {
             this.cameraControl.update();
         }
         // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
@@ -276,6 +276,11 @@ class MyScene extends THREE.Scene {
 
     atacarRonin(evento) {
         this.ronin.atacar(evento);
+    }
+
+    dispararRonin(evento) {
+        this.ronin.disparar(evento);
+        return false;
     }
 
     ataqueEspecialRoning(evento) {
@@ -311,6 +316,12 @@ $(function () {
     window.addEventListener('click', (event) => {
         scene.atacarRonin(event);
     })
+
+    window.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        scene.dispararRonin(event);
+        return false;
+    });
 
     window.setInterval(() => {
         var tActual = document.getElementById("cooldown").innerHTML;

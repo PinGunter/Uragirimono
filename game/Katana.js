@@ -87,8 +87,7 @@ class Katana extends THREE.Object3D {
             this.caja.getWorldPosition(v_caja);
             vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
                 new THREE.Vector2(v_otro.x, v_otro.z));
-            var d_media = this.caja.geometry.parameters.height / 3 + otro.caja.geometry.parameters.width / 2;
-            return (vectorEntreObj.length() < d_media); // se puede revisar
+            return (vectorEntreObj.length() < 8); // se puede revisar
         }
     }
 

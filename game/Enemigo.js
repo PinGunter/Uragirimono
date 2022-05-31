@@ -70,7 +70,9 @@ class Enemigo extends THREE.Object3D {
                     break;
                 }
             }
+            return true;
         }
+        return false;
 
     }
 
