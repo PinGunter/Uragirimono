@@ -265,8 +265,8 @@ class Motobug extends Enemigo {
                 posicion.add(tangente);
                 this.lookAt(posicion);
             })
-            // .repeat(Infinity)
-            // .start();
+            .repeat(Infinity)
+            .start();
     }
 
     morir() {

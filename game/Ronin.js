@@ -26,9 +26,6 @@ class Ronin extends THREE.Object3D {
         this.rondaActual = 1;
         this.danio = 2;
 
-        this.ataqueEspecialCooldown = 5;
-        this.tiempoCooldown = 0;
-
         this.ronin = new THREE.Object3D(); // el personaje en sí
 
         this.roninWrap = new THREE.Object3D();
@@ -357,19 +354,6 @@ class Ronin extends THREE.Object3D {
         }
     }
 
-    ataqueEspecial(evento) {
-        if (this.tiempoCooldown == 0) {
-            this.fadeToAction("ataqueEspecial", 1);
-            document.getElementById("disponible").innerHTML = "Ataque Especial disponible en ";
-            document.getElementById("cooldown").innerHTML = this.ataqueEspecialCooldown;
-            this.tiempoCooldown = this.ataqueEspecialCooldown;
-        } else console.log("no puedo atacar");
-    }
-
-    reducirCooldown() {
-        this.tiempoCooldown -= 1;
-    }
-
     moverPersonaje(teclasPulsadas, camara, delta) {
         this.calcularOffsetDireccion(teclasPulsadas);
         camara.getWorldDirection(this.direccion);
@@ -394,7 +378,7 @@ class Ronin extends THREE.Object3D {
     }
 
     quitarVida() {
-        if (this.vidas > 0 && !(this.actions["recibeGolpe"].isRunning() || this.actions["ataqueEspecial"].isRunning() || this.actions["morir"].isRunning())) {
+        if (this.vidas > 0 && !(this.actions["recibeGolpe"].isRunning() || this.actions["morir"].isRunning())) {
             this.vidas -= 1;
             if (this.vidas > 0) {
                 this.fadeToAction("recibeGolpe", 1);
