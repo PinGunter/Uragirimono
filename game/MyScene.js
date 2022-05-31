@@ -240,13 +240,15 @@ class MyScene extends THREE.Scene {
 
                     if (this.ronin.katana.interseccionEnemigo(enemigo)) {
                         enemigo.quitarVida(this.ronin.danio);
-                        if (enemigo.estoyMuerto()) {
-                            this.enemigosMuertos.push(this.enemigos.indexOf(enemigo));
-                        }
                     }
                 }
             });
-            this.enemigos.forEach(enemigo => { enemigo.update() });
+            for (var i=0; i < this.enemigos.length; i++){
+                this.enemigos[i].update();
+                if (this.enemigos[i].estoyMuerto() && !this.enemigosMuertos.includes(i)){
+                    this.enemigosMuertos.push(i);
+                }
+            }
             if (this.enemigosMuertos.length === this.enemigos.length && this.enemigos.length > 0 && this.enemigosMuertos.length > 0)
                 this.siguienteRonda();
         } else {

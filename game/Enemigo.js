@@ -76,6 +76,10 @@ class Enemigo extends THREE.Object3D {
 
     }
 
+    estoyMuerto() {
+        return this.vidasActuales === 0;
+    }
+
 }
 
 export { Enemigo };

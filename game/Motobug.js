@@ -171,7 +171,7 @@ class Motobug extends Enemigo {
 
         // los tubos de escape
         var tuboGeo1 = new THREE.CylinderGeometry(1, 1, 5, 8, 8);
-        var tuboMat = new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load("../imgs/tubo.jpg"), metalness: 1 });
+        var tuboMat = new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load("../imgs/tubo.jpg")});
         tuboGeo1.rotateZ(-Math.PI / 2 - Math.PI / 6);
         tuboGeo1.translate(-8, 3, -5);
         this.tubo1 = new THREE.Mesh(tuboGeo1, tuboMat);
@@ -273,10 +273,6 @@ class Motobug extends Enemigo {
         console.log("me muero...");
         super.morir();
         this.velocidadRueda = 0;
-    }
-
-    estoyMuerto() {
-        return this.vidasActuales === 0;
     }
 
     update() {
