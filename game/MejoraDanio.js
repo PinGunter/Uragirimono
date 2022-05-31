@@ -1,17 +1,26 @@
-import { Recompensa } from "./Recompensa.js";
+import { Mejora } from "./Mejora.js";
 import { Katana } from './Katana.js';
 import * as THREE from '../libs/three.module.js';
 import * as TWEEN from "../libs/tween.esm.js";
 
-class RecompensaVida extends Recompensa {
-    constructor() {
-        super();
+class MejoraDanio extends Mejora {
+    constructor(parentNode) {
+        super(parentNode);
 
         // la recompensa será un katana con varias flechas verdes indicando que "sube"
         this.katana = new Katana();
         this.katana.rotateX(Math.PI / 6)
         this.katana.scale.set(0.7, 0.7, 0.7);
         this.add(this.katana);
+
+        this.katana.geometrias.forEach(geo => {
+            this.geometrias.push(geo);
+        });
+
+        this.katana.materiales.forEach(mat => {
+            this.materiales.push(mat);
+        });
+
 
         this.flechas = [];
         // flecha
@@ -31,6 +40,9 @@ class RecompensaVida extends Recompensa {
         var cajaMat = new THREE.MeshStandardMaterial({transparent: true, opacity: 0})
         this.caja = new THREE.Mesh(cajaGeo, cajaMat);
         this.add(this.caja);
+        this.animar();
+
+        this.geometrias
 
     }
 
@@ -43,11 +55,26 @@ class RecompensaVida extends Recompensa {
         var flecha = new THREE.Group();
         flecha.add(new THREE.Mesh(cuerpoGeo, flechaMat));
         flecha.add(new THREE.Mesh(cabezaGeo, flechaMat));
+        this.geometrias.push(cuerpoGeo);
+        this.geometrias.push(cabezaGeo);
+        this.materiales.push(flechaMat);
         return flecha;
     }
 
-    hpBoost(){
-        return Math.floor(Math.random()*(5)+1);
+    dmgBoost() {
+        if (this.mejoraAplicada) return 1;
+
+        this.mejoraAplicada = true;
+        return Math.floor(Math.random() * (2) + 1);
+
+    }
+
+    mejoroAtaque() {
+        return true;
+    }
+
+    mejoroVida() {
+        return false;
     }
 
     update() {
@@ -58,4 +85,4 @@ class RecompensaVida extends Recompensa {
     }
 }
 
-export { RecompensaVida };
+export { MejoraDanio };

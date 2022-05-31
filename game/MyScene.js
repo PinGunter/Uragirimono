@@ -9,7 +9,8 @@ import * as TWEEN from '../libs/tween.esm.js'
 // Clases de mi proyecto
 import { Ronin } from './Ronin.js'
 import { Motobug } from './Motobug.js'
-import { RecompensaDanio } from './RecompensaDanio.js'
+import { MejoraDanio } from './MejoraDanio.js'
+import { MejoraVida } from './MejoraVida.js'
 /// La clase fachada del modelo
 /**
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
@@ -45,12 +46,13 @@ class MyScene extends THREE.Scene {
 
         // Por último creamos el modelo.
         this.clock = new THREE.Clock();
-        this.recompensaD = new RecompensaDanio();
-        this.add(this.recompensaD)
         this.teclasPulsadas = {};
         this.ronin = new Ronin(this.camera, this);
         this.enemigos = [];
         this.enemigosMuertos = [];
+        this.tocaPremio = true;
+        this.premios = [];
+        this.finPremio = false;
         if (!this.debug) {
             this.add(this.ronin);
             var vidas = "";
@@ -204,13 +206,26 @@ class MyScene extends THREE.Scene {
         })
     }
 
+    premioRonda(){
+        this.tocaPremio = false;
+        var mejoraD = new MejoraDanio(this);
+        mejoraD.scale.set(0.7,0.7,0.7);
+        var mejoraV = new MejoraVida(this);
+        mejoraV.scale.set(0.7,0.7,0.7);
+        mejoraD.position.set(-30,0, -30)
+        mejoraV.position.set(-30,0, 30)
+        this.premios.push(mejoraD);
+        this.premios.push(mejoraV);
+        this.add(mejoraD);
+        this.add(mejoraV)
+    }
+
     siguienteRonda() {
         this.ronda += 1;
         this.ronin.rondaActual = this.ronda;
         this.eliminarMuertos();
         document.getElementById("ronda").innerText = `Ronda: ${this.ronda}`;
         this.rellenarEnemigos();
-
     }
 
 
@@ -226,12 +241,11 @@ class MyScene extends THREE.Scene {
 
         // Se actualiza el resto del modelo
         TWEEN.update();
-        this.recompensaD.update();
         this.ronin.update(this.teclasPulsadas, this.camera);
         if (!this.debug) {
             this.enemigos.forEach(enemigo => {
                 if (!enemigo.estoyMuerto()) {
-                    if (this.ronin.interseccionEnemigo(enemigo)) {
+                    if (this.ronin.interseccionOtro(enemigo)) {
                         this.ronin.quitarVida();
                         var vidas = "";
                         for (var i = 0; i < this.ronin.vidas; i++) {
@@ -251,15 +265,52 @@ class MyScene extends THREE.Scene {
                     this.enemigosMuertos.push(i);
                 }
             }
-            if (this.enemigosMuertos.length === this.enemigos.length && this.enemigos.length > 0 && this.enemigosMuertos.length > 0)
+            if (this.enemigosMuertos.length === this.enemigos.length && this.enemigos.length > 0 && this.enemigosMuertos.length > 0){
+                if (this.tocaPremio){    
+                    console.log(`Toca premio: ${this.tocaPremio}`)
+                    this.premioRonda();
+                }
+            }
+
+            this.premios.forEach(premio => {
+                premio.update();
+                if (!this.finPremio && this.ronin.interseccionOtro(premio)) {
+                    if (premio.mejoroAtaque()) {
+                        this.ronin.danio = Math.round(premio.dmgBoost() * this.ronin.danio * 100) / 100;
+                    } else if (premio.mejoroVida()) {
+                        var hpBoost = premio.hpBoost();
+                        this.ronin.totalVidas += hpBoost;
+                        this.ronin.vidas += hpBoost;
+                        var vidas = "";
+                        for (var i = 0; i < this.ronin.vidas; i++) {
+                            vidas += "❤️";
+                        }
+                        document.getElementById("vidas").innerHTML = vidas;
+                    }
+                    this.finPremio = true;
+                }
+            })
+            if (this.finPremio){
+                this.premios.forEach(p => {
+                    p.desaparecer();
+                })
+                this.premios = [];
+                this.finPremio = false;
+                this.tocaPremio = true;
                 this.siguienteRonda();
+            }
+
         } else {
             this.cameraControl.update();
         }
         // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
         this.renderer.render(this, this.getCamera());
-        document.getElementById("enemigos").innerText = `Quedan ${this.enemigos.length - this.enemigosMuertos.length} enemigos`;
-
+        if (!this.tocaPremio) {
+            document.getElementById("enemigos").innerText = `Escoge tu mejora`;
+        } else {
+            document.getElementById("enemigos").innerText = `Quedan ${this.enemigos.length - this.enemigosMuertos.length} enemigos`;
+        }
+        document.getElementById("dmgBoost").innerText = `Daño de katana: ${this.ronin.danio}`;
         // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
         // Literalmente le decimos al navegador: "La próxima vez que haya que refrescar la pantalla, llama al método que te indico".
         // Si no existiera esta línea,  update()  se ejecutaría solo la primera vez.
@@ -295,7 +346,7 @@ $(function () {
 
     // Se instancia la escena pasándole el  div  que se ha creado en el html para visualizar
 
-    var scene = new MyScene("#WebGL-output", true);
+    var scene = new MyScene("#WebGL-output", false);
 
     // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
     window.addEventListener("resize", () => scene.onWindowResize());

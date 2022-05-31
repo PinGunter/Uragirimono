@@ -76,6 +76,21 @@ class Katana extends THREE.Object3D {
         this.caja = new THREE.Mesh(hitboxGeo, hitboxMat);
         this.add(this.caja);
 
+        this.geometrias = [];
+        this.materiales = [];
+
+        this.geometrias.push(hojaGeo);
+        this.geometrias.push(sepMangoHojaGeo);
+        this.geometrias.push(mangoGeo);
+        this.geometrias.push(detalleGeo);
+        this.geometrias.push(hitboxGeo);
+
+        this.materiales.push(materialMetalico);
+        this.materiales.push(mangoMat);
+        this.materiales.push(materialDetalles);
+        this.materiales.push(hitboxMat);
+
+
     }
 
     interseccionEnemigo(otro) {

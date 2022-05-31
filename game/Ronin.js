@@ -7,7 +7,6 @@ import { Katana } from './Katana.js';
 import { Flecha } from './Flecha.js';
 
 var morirAction;
-const TotalVidas = 5;
 var escaladoOriginal;
 
 class Ronin extends THREE.Object3D {
@@ -22,9 +21,10 @@ class Ronin extends THREE.Object3D {
         this.newX = 0;
         this.newZ = 0;
         this.camera = camera;
-        this.vidas = TotalVidas;
+        this.totalVidas = 5;
+        this.vidas = this.totalVidas;
         this.rondaActual = 1;
-        this.danio = 2;
+        this.danio = 1;
 
         this.ronin = new THREE.Object3D(); // el personaje en sí
 
@@ -364,7 +364,7 @@ class Ronin extends THREE.Object3D {
         this.newZ += this.direccion.z * this.velocidadMovimiento * delta;
     }
 
-    interseccionEnemigo(otro) {
+    interseccionOtro(otro) {
         if (this.ready) {
             var vectorEntreObj = new THREE.Vector2();
             var v_caja = new THREE.Vector3();
@@ -382,11 +382,11 @@ class Ronin extends THREE.Object3D {
             this.vidas -= 1;
             if (this.vidas > 0) {
                 this.fadeToAction("recibeGolpe", 1);
-                this.barraVida[TotalVidas - this.vidas - 1].material.transparent = true;
-                this.barraVida[TotalVidas - this.vidas - 1].material.opacity = 0;
+                this.barraVida[this.totalVidas - this.vidas - 1].material.transparent = true;
+                this.barraVida[this.totalVidas - this.vidas - 1].material.opacity = 0;
             } else {
-                this.barraVida[TotalVidas - this.vidas - 1].material.transparent = true;
-                this.barraVida[TotalVidas - this.vidas - 1].material.opacity = 0;
+                this.barraVida[this.totalVidas - this.vidas - 1].material.transparent = true;
+                this.barraVida[this.totalVidas - this.vidas - 1].material.opacity = 0;
                 this.fadeToAction("morir", 1);
 
             }
