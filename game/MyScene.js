@@ -276,7 +276,7 @@ class MyScene extends THREE.Scene {
                 premio.update();
                 if (!this.finPremio && this.ronin.interseccionOtro(premio)) {
                     if (premio.mejoroAtaque()) {
-                        this.ronin.danio = Math.round(premio.dmgBoost() * this.ronin.danio * 100) / 100;
+                        this.ronin.danio += premio.dmgBoost();
                     } else if (premio.mejoroVida()) {
                         var hpBoost = premio.hpBoost();
                         this.ronin.totalVidas += hpBoost;
