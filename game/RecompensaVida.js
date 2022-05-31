@@ -3,7 +3,7 @@ import { Katana } from './Katana.js';
 import * as THREE from '../libs/three.module.js';
 import * as TWEEN from "../libs/tween.esm.js";
 
-class RecompensaDanio extends Recompensa {
+class RecompensaVida extends Recompensa {
     constructor() {
         super();
 
@@ -46,9 +46,8 @@ class RecompensaDanio extends Recompensa {
         return flecha;
     }
 
-    dmgBoost(){
-        var boost = [0.1,0.2,0.3,0.4,0.5]
-        return 1+ boost[Math.floor(Math.random()*(5))];
+    hpBoost(){
+        return Math.floor(Math.random()*(5)+1);
     }
 
     update() {
@@ -59,4 +58,4 @@ class RecompensaDanio extends Recompensa {
     }
 }
 
-export { RecompensaDanio };
+export { RecompensaVida };
