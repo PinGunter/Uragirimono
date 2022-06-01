@@ -334,14 +334,24 @@ class Ronin extends THREE.Object3D {
     }
 
     disparar() {
+        /**
+         * Metodo para disparar una flecha
+         * Despues de muchos intentos, la mejor forma ha consistido en hacer un raycast
+         * hacia el sentido en el que mira el personaje, calculado con el direccion.applyQuaternion
+         * pero salia con un "offset" de 90º asi que le he hecho el producto vectorial con el
+         * eje Y y así obtener el sentido correcto
+         */
         if (!this.actions['morir'].isRunning() && this.vidas > 0) {
             if (!this.actions["disparar"].isRunning()) {
                 this.fadeToAction("disparar", 1)
                 var posicionGlobalRonin = new THREE.Vector3();
                 this.ronin.getWorldPosition(posicionGlobalRonin);
-                var direccion = new THREE.Vector3();
-                this.puntero.getWorldPosition(direccion);
+                var direccion = new THREE.Vector3(1,0,0);
+                // this.puntero.getWorldPosition(direccion);
+                direccion.applyQuaternion(this.ronin.quaternion);
+                direccion = direccion.cross(new THREE.Vector3(0,1,0));
                 direccion = direccion.normalize();
+
                 raycaster.set(posicionGlobalRonin, direccion);
                 var intersects = raycaster.intersectObjects(this.borders);
                 var objetivo = intersects[0].point;

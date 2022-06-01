@@ -184,6 +184,7 @@ class MyScene extends THREE.Scene {
 
     rellenarEnemigos() {
         for (var i = 0; i < this.ronda * 2; i++) {
+            var wrapper = new THREE.Object3D();
             var motobug = new Motobug(this, this.ronda);
             var x = this.ronin.position.x;
             var z = this.ronin.position.z;
@@ -194,11 +195,11 @@ class MyScene extends THREE.Scene {
             }
             motobug.translateX(x);
             motobug.translateZ(z);
+            wrapper.add(motobug);
+            wrapper.add(new THREE.PointLight(0xff0000, 0.5, 5));
             this.enemigos.push(motobug);
+            this.add(wrapper);
         }
-        this.enemigos.forEach(enemigo => {
-            this.add(enemigo);
-        })
     }
 
     premioRonda(){

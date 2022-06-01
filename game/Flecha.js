@@ -2,10 +2,11 @@ import * as THREE from '../libs/three.module.js';
 import * as TWEEN from '../libs/tween.esm.js';
 
 class Flecha extends THREE.Object3D {
-    constructor(parentNode, enemigos) {
+    constructor(parentNode, enemigos, borders) {
         super();
         this.parentNode = parentNode;
         this.enemigos = enemigos;
+        this.borders = borders;
         // primero modelamos la flecha
         var cuerpoGeo = new THREE.CylinderGeometry(0.5, 0.5, 7, 8);
         cuerpoGeo.rotateZ(Math.PI / 2);
@@ -120,7 +121,7 @@ class Flecha extends THREE.Object3D {
                 // console.log(this.rotation.y);
             })
             .onUpdate(() => {
-                this.position.set(origen.x, 0, origen.z);
+                this.position.set(origen.x, 5, origen.z);
                 this.enemigos.forEach(otro => {
                     if (hitsEnemigos < 3) {
                         var vectorEntreObj = new THREE.Vector2();
