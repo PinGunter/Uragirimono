@@ -48,6 +48,7 @@ class Enemigo extends THREE.Object3D {
             })
             .onComplete(() => {
                 this.vidasActuales = 0;
+                console.log("me borro");
                 this.escena.remove(this);
             })
 

@@ -5,9 +5,10 @@ import * as TWEEN from '../libs/tween.esm.js';
 
 
 class Motobug extends Enemigo {
-    constructor(escena, vidas, bordes) {
+    constructor(escena, vidas, bordes, id) {
         super(escena, vidas, bordes);
-
+        this.identificador = id;
+        this.ultimaPosicion = new THREE.Vector3(20, 0, 0);
         this.geometrias = [];
         this.materiales = [];
         this.figura = new THREE.Object3D();
@@ -171,7 +172,7 @@ class Motobug extends Enemigo {
 
         // los tubos de escape
         var tuboGeo1 = new THREE.CylinderGeometry(1, 1, 5, 6, 6);
-        var tuboMat = new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load("../imgs/tubo.jpg")});
+        var tuboMat = new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load("../imgs/tubo.jpg") });
         tuboGeo1.rotateZ(-Math.PI / 2 - Math.PI / 6);
         tuboGeo1.translate(-8, 3, -5);
         this.tubo1 = new THREE.Mesh(tuboGeo1, tuboMat);
@@ -233,18 +234,17 @@ class Motobug extends Enemigo {
         )
         this.caja.name = "cajaMotobug";
         this.figura.add(this.caja);
-
         this.geometrias.push(this.caja.geometry);
         this.materiales.push(this.caja.material);
 
 
         // movimiento
         var curva = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
-            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
-            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
-            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
-            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
         ], true);
 
         var posOrigen = new THREE.Vector3(0, 0, 0);
@@ -258,19 +258,30 @@ class Motobug extends Enemigo {
             })
             .easing(TWEEN.Easing.Linear.None)
             .onUpdate(() => {
-                var t = origen.p;
-                var posicion = curva.getPointAt(t);
-                this.position.copy(posicion);
-                var tangente = curva.getTangentAt(t);
-                posicion.add(tangente);
-                this.lookAt(posicion);
+                if (!this.estoyMuerto()) {
+                    var t = origen.p;
+                    var posicion = curva.getPointAt(t);
+                    this.position.copy(posicion);
+                    console.log(`${this.identificador} :: posicion antes de colision: ${this.position.x}, ${this.position.z}`);
+                    for (var i = 0; i < this.borders.length; i++) {
+                        var borde = this.borders[i];
+                        if (this.interseccionBorde(borde)) {
+                            this.position.copy(this.ultimaPosicion);
+                            console.log(`${this.identificador} :: COLISION, posicion despues: ${this.position.x}, ${this.position.z}`);
+                        } 
+                    }
+                    this.ultimaPosicion.copy(this.position);
+                    var tangente = curva.getTangentAt(t);
+                    posicion.add(tangente);
+                    this.lookAt(posicion);
+                }
             })
             .repeat(Infinity)
             .start();
     }
 
     rng(min, max) {
-        return Math.floor(min + Math.random()*(max - min +1))
+        return Math.floor(min + Math.random() * (max - min + 1))
     }
 
     morir() {
@@ -279,17 +290,20 @@ class Motobug extends Enemigo {
         this.velocidadRueda = 0;
     }
 
-    interseccionBorde(borde){
-        var vectorEntreObj = new THREE.Vector2();
-        var v_caja = new THREE.Vector3();
-        var v_borde = new THREE.Vector3();
-        borde.getWorldPosition(v_borde);
-        this.caja.getWorldPosition(v_caja);
-        vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
-            new THREE.Vector2(v_borde.x, v_borde.z));
-        return (vectorEntreObj.length() < 10); // se puede revisar
-}
-    
+    interseccionBorde(borde) {
+        if (borde.name === "columna") {
+            var vectorEntreObj = new THREE.Vector2();
+            var v_caja = new THREE.Vector3();
+            var v_borde = new THREE.Vector3();
+            borde.getWorldPosition(v_borde);
+            this.caja.getWorldPosition(v_caja);
+            vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
+                new THREE.Vector2(v_borde.x, v_borde.z));
+            // console.log(`Distancia con ${borde.name}: ${vectorEntreObj.length()}`);
+            return (vectorEntreObj.length() < 15); // se puede revisar
+        }
+    }
+
     update() {
         this.rueda.rotation.z -= this.velocidadRueda;
     }

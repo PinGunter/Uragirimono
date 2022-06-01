@@ -48,7 +48,7 @@ class MyScene extends THREE.Scene {
         this.add(this.mapa);
         this.clock = new THREE.Clock();
         this.teclasPulsadas = {};
-        this.ronin = new Ronin(this.camera, this, this.mapa.hitboxes);
+        this.ronin = new Ronin(this.camera, this, this.mapa.hitboxes, 100);
         this.enemigos = [];
         this.enemigosMuertos = [];
         this.tocaPremio = true;
@@ -178,6 +178,9 @@ class MyScene extends THREE.Scene {
     }
 
     eliminarMuertos() {
+        this.enemigos.forEach(enemigo => {
+            this.remove(enemigo);
+        })
         this.enemigos = []
         this.enemigosMuertos = []
     }
@@ -185,7 +188,7 @@ class MyScene extends THREE.Scene {
     rellenarEnemigos() {
         for (var i = 0; i < this.ronda * 2; i++) {
             var wrapper = new THREE.Object3D();
-            var motobug = new Motobug(this, this.ronda, this.mapa.hitboxes);
+            var motobug = new Motobug(this, this.ronda, this.mapa.hitboxes, i);
             var x = this.ronin.position.x;
             var z = this.ronin.position.z;
             while (x > this.ronin.position.x - 5 && x < this.ronin.position.x + 5 &&
@@ -204,6 +207,7 @@ class MyScene extends THREE.Scene {
 
     premioRonda(){
         this.tocaPremio = false;
+        this.eliminarMuertos();
         var mejoraD = new MejoraDanio(this);
         mejoraD.scale.set(0.7,0.7,0.7);
         var mejoraV = new MejoraVida(this);
@@ -219,7 +223,6 @@ class MyScene extends THREE.Scene {
     siguienteRonda() {
         this.ronda += 1;
         this.ronin.rondaActual = this.ronda;
-        this.eliminarMuertos();
         document.getElementById("ronda").innerText = `Ronda: ${this.ronda}`;
         this.rellenarEnemigos();
     }
@@ -259,6 +262,7 @@ class MyScene extends THREE.Scene {
                 this.enemigos[i].update();
                 if (this.enemigos[i].estoyMuerto() && !this.enemigosMuertos.includes(i)){
                     this.enemigosMuertos.push(i);
+                    this.remove(this.enemigos[i]);
                 }
             }
             if (this.enemigosMuertos.length === this.enemigos.length && this.enemigos.length > 0 && this.enemigosMuertos.length > 0){
@@ -270,6 +274,7 @@ class MyScene extends THREE.Scene {
             this.premios.forEach(premio => {
                 premio.update();
                 if (!this.finPremio && this.ronin.interseccionOtro(premio)) {
+                    document.getElementById("loading").style.display = "block";
                     if (premio.mejoroAtaque()) {
                         this.ronin.danio += premio.dmgBoost();
                     } else if (premio.mejoroVida()) {

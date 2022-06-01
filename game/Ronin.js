@@ -12,10 +12,11 @@ var escaladoOriginal;
 const raycaster = new THREE.Raycaster();
 
 class Ronin extends THREE.Object3D {
-    constructor(camera, escena, borders) {
+    constructor(camera, escena, borders, mapSize) {
         super();
         this.borders = borders;
         this.escena = escena;
+        this.mapSize = mapSize;
         this.estado = "idle";
         this.clock = new THREE.Clock();
         this.clockMovimiento = new THREE.Clock();
@@ -113,6 +114,7 @@ class Ronin extends THREE.Object3D {
                 that.fadeToAction("idle", true, 1.0); // animacion inicials
 
                 document.getElementById("info").innerHTML = "";
+                document.getElementById("loading").style.display = "none";
                 that.ready = true;
             },
             function (xhr) {
@@ -373,7 +375,20 @@ class Ronin extends THREE.Object3D {
         this.direccion.normalize();
         this.direccion.applyAxisAngle(this.anguloRotacion, this.direccionOffset);
         this.newX += this.direccion.x * this.velocidadMovimiento * delta;
+        if (this.newX > 0 && this.newX > (this.mapSize-3)){
+            this.newX = this.mapSize-3;
+        }
+        if (this.newX < 0 && this.newX < -(this.mapSize-3)){
+            this.newX = -(this.mapSize-3);
+        }
         this.newZ += this.direccion.z * this.velocidadMovimiento * delta;
+        if (this.newZ > 0 && this.newZ > (this.mapSize-3)){
+            this.newZ = this.mapSize-3;
+        }
+        if (this.newZ < 0 && this.newZ < -(this.mapSize-3)){
+            this.newZ = -(this.mapSize-3);
+        }
+
     }
 
     interseccionOtro(otro) {
@@ -398,8 +413,8 @@ class Ronin extends THREE.Object3D {
             this.caja.getWorldPosition(v_caja);
             vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
                 new THREE.Vector2(v_borde.x, v_borde.z));
-            console.log(`Distancia con ${borde.name}: ${vectorEntreObj.length()}`);
-            console.log(`Ancho de borde ${borde.name}: ${borde.geometry.parameters.width}`)
+            // console.log(`Distancia con ${borde.name}: ${vectorEntreObj.length()}`);
+            // console.log(`Ancho de borde ${borde.name}: ${borde.geometry.parameters.width}`)
             return (vectorEntreObj.length() < borde.geometry.parameters.width); // se puede revisar
         }
     }

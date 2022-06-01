@@ -29,6 +29,7 @@ class Mejora extends THREE.Object3D {
         var destino = {e: 0};
         var desaparecer = new TWEEN.Tween(origen)
             .to(destino, 200)
+
             .easing(TWEEN.Easing.Linear.None)
             .onUpdate(() => {
                 this.scale.set(origen.e, origen.e, origen.e)
@@ -41,6 +42,7 @@ class Mejora extends THREE.Object3D {
                     m.dispose();
                 })
                 this.parentNode.remove(this);
+                document.getElementById("loading").style.display = "none";
             })
             .start();
     }

@@ -17,7 +17,7 @@ class Mapa extends THREE.Object3D{
         this.paredL = new THREE.Mesh(paredLgeo, materialPared);
         this.add(this.paredL);
 
-        var hitboxMat = new THREE.MeshStandardMaterial({color: 0xff0000, transparent: true, opacity: 0.8})
+        var hitboxMat = new THREE.MeshStandardMaterial({color: 0xff0000, transparent: true, opacity: 0})
 
         var cajaLgeo = new THREE.BoxGeometry(5,10,200);
         this.cajaL = new THREE.Mesh(cajaLgeo, hitboxMat);
