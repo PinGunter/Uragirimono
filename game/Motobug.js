@@ -12,7 +12,7 @@ class Motobug extends Enemigo {
         this.materiales = [];
         this.figura = new THREE.Object3D();
         // la rueda
-        var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 30);
+        var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 15);
         var texturaRueda = new THREE.TextureLoader().load("../imgs/tire.jpg");
         texturaRueda.wrapS = THREE.RepeatWrapping;
         texturaRueda.wrapT = THREE.RepeatWrapping;
@@ -34,7 +34,7 @@ class Motobug extends Enemigo {
             true,
             0
         )
-        var puntos2d = curvaCuerpo.getPoints(20);
+        var puntos2d = curvaCuerpo.getPoints(15);
         var formaCuerpo = new THREE.Shape(puntos2d);
         var puntos3d = [];
         puntos2d.forEach(p => {
@@ -45,7 +45,7 @@ class Motobug extends Enemigo {
         var cuerpoMat = new THREE.MeshToonMaterial({ color: 0xe6202a });
         var cuerpoCentral = new THREE.Mesh(cuerpoGeo, cuerpoMat);
 
-        var cuerpoLatGeo = new THREE.BoxGeometry(10, 5, 9);
+        var cuerpoLatGeo = new THREE.BoxGeometry(10, 5, 9, 1, 1, 1);
         cuerpoLatGeo.translate(0, 2.5, 0);
         var cuerpoLat = new THREE.Mesh(cuerpoLatGeo, cuerpoMat);
 
@@ -66,7 +66,7 @@ class Motobug extends Enemigo {
             0
         )
         puntos2d = pathCabeza.getPoints(20);
-        var formaCabeza = new THREE.Shape(curvaCuerpo.getPoints(20));
+        var formaCabeza = new THREE.Shape(curvaCuerpo.getPoints(15));
         puntos3d = [];
         puntos2d.forEach(p => {
             puntos3d.push(new THREE.Vector3(p.x, p.y, 0));
@@ -81,26 +81,26 @@ class Motobug extends Enemigo {
 
         // las manchas negras
 
-        var decoGeo1 = new THREE.CylinderGeometry(2, 2, 0.75, 7, 7);
+        var decoGeo1 = new THREE.CylinderGeometry(2, 2, 0.75, 6, 6);
         var decoMat = new THREE.MeshToonMaterial({ color: 0x333232 });
         decoGeo1.rotateX(Math.PI / 3);
         decoGeo1.translate(0, 7.5, 4.5);
         this.deco1 = new THREE.Mesh(decoGeo1, decoMat);
 
 
-        var decoGeo2 = new THREE.CylinderGeometry(2, 2, 0.75, 7, 7);
+        var decoGeo2 = new THREE.CylinderGeometry(2, 2, 0.75, 6, 6);
         decoGeo2.rotateX(-Math.PI / 3);
         decoGeo2.translate(0, 7.5, -4.5);
         this.deco2 = new THREE.Mesh(decoGeo2, decoMat);
 
-        var decoGeo3 = new THREE.CylinderGeometry(2, 2, 0.75, 7, 7);
+        var decoGeo3 = new THREE.CylinderGeometry(2, 2, 0.75, 6, 6);
         decoGeo3.rotateX(Math.PI / 4);
         decoGeo3.rotateZ(Math.PI / 2);
         decoGeo3.rotateX(-Math.PI / 5);
         decoGeo3.translate(-8, 4, 3);
         this.deco3 = new THREE.Mesh(decoGeo3, decoMat);
 
-        var decoGeo4 = new THREE.CylinderGeometry(2, 2, 0.75, 7, 7);
+        var decoGeo4 = new THREE.CylinderGeometry(2, 2, 0.75, 6, 6);
         decoGeo4.rotateX(-Math.PI / 4);
         decoGeo4.rotateZ(Math.PI / 2);
         decoGeo4.rotateX(Math.PI / 5);
@@ -170,13 +170,13 @@ class Motobug extends Enemigo {
 
 
         // los tubos de escape
-        var tuboGeo1 = new THREE.CylinderGeometry(1, 1, 5, 8, 8);
+        var tuboGeo1 = new THREE.CylinderGeometry(1, 1, 5, 6, 6);
         var tuboMat = new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load("../imgs/tubo.jpg")});
         tuboGeo1.rotateZ(-Math.PI / 2 - Math.PI / 6);
         tuboGeo1.translate(-8, 3, -5);
         this.tubo1 = new THREE.Mesh(tuboGeo1, tuboMat);
 
-        var tuboGeo2 = new THREE.CylinderGeometry(1, 1, 5, 8, 8);
+        var tuboGeo2 = new THREE.CylinderGeometry(1, 1, 5, 6, 6);
         tuboGeo2.rotateZ(-Math.PI / 2 - Math.PI / 6);
         tuboGeo2.translate(-8, 3, 5);
         this.tubo2 = new THREE.Mesh(tuboGeo2, tuboMat);
@@ -187,13 +187,13 @@ class Motobug extends Enemigo {
 
 
         // los brazos
-        var brazoGeo1 = new THREE.CylinderGeometry(0.5, 0.5, 5, 8, 8);
+        var brazoGeo1 = new THREE.CylinderGeometry(0.5, 0.5, 5, 6, 6);
         brazoGeo1.rotateX(Math.PI / 2);
         brazoGeo1.translate(2, 3, 4);
         var brazoMat = new THREE.MeshToonMaterial({ color: "yellow" });
         this.brazo1 = new THREE.Mesh(brazoGeo1, brazoMat);
 
-        var brazoGeo2 = new THREE.CylinderGeometry(0.5, 0.5, 5, 8, 8);
+        var brazoGeo2 = new THREE.CylinderGeometry(0.5, 0.5, 5, 6, 6);
         brazoGeo2.rotateX(Math.PI / 2);
         brazoGeo2.translate(2, 3, -4);
         this.brazo2 = new THREE.Mesh(brazoGeo2, brazoMat);
@@ -240,11 +240,11 @@ class Motobug extends Enemigo {
 
         // movimiento
         var curva = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
-            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
-            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
-            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
-            new THREE.Vector3(Math.random() * 100 - 100, 3.75, Math.random() * 100 - 100),
+            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
+            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
+            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
+            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
+            new THREE.Vector3(this.rng(-99,99), 3.75, this.rng(-99,99)),
         ], true);
 
         var posOrigen = new THREE.Vector3(0, 0, 0);
@@ -267,6 +267,10 @@ class Motobug extends Enemigo {
             })
             .repeat(Infinity)
             .start();
+    }
+
+    rng(min, max) {
+        return Math.floor(min + Math.random()*(max - min +1))
     }
 
     morir() {

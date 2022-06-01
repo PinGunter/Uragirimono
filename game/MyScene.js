@@ -11,6 +11,7 @@ import { Ronin } from './Ronin.js'
 import { Motobug } from './Motobug.js'
 import { MejoraDanio } from './MejoraDanio.js'
 import { MejoraVida } from './MejoraVida.js'
+import { Mapa } from './Mapa.js'
 /// La clase fachada del modelo
 /**
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
@@ -40,14 +41,14 @@ class MyScene extends THREE.Scene {
         // Tendremos una cámara con un control de movimiento con el ratón
         this.createCamera();
 
-        // Un suelo 
-        this.createGround();
-
+        this.createCube();
 
         // Por último creamos el modelo.
+        this.mapa = new Mapa();
+        this.add(this.mapa);
         this.clock = new THREE.Clock();
         this.teclasPulsadas = {};
-        this.ronin = new Ronin(this.camera, this);
+        this.ronin = new Ronin(this.camera, this, this.mapa.hitboxes);
         this.enemigos = [];
         this.enemigosMuertos = [];
         this.tocaPremio = true;
@@ -95,7 +96,7 @@ class MyScene extends THREE.Scene {
         //create a perspective camera
         this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
         // También se indica dónde se coloca
-        this.camera.position.set(40, 80, 40);
+        this.camera.position.set(0, 80, 0);
         // Y hacia dónde mira
         var look = new THREE.Vector3(0, 0, 0);
         if (this.debug) {
@@ -116,18 +117,12 @@ class MyScene extends THREE.Scene {
         }
     }
 
-    createGround() {
-        var gridHelper = new THREE.GridHelper(1000, 200);
-        this.add(gridHelper);
-    }
-
-
     createLights() {
         // Se crea una luz ambiental, evita que se vean complentamente negras las zonas donde no incide de manera directa una fuente de luz
         // La luz ambiental solo tiene un color y una intensidad
         // Se declara como   var   y va a ser una variable local a este método
         //    se hace así puesto que no va a ser accedida desde otros métodos
-        var ambientLight = new THREE.AmbientLight(0xccddee, 0.35);
+        var ambientLight = new THREE.AmbientLight(0xaaaaaa, 0.35);
         // La añadimos a la escena
         this.add(ambientLight);
 
@@ -135,9 +130,9 @@ class MyScene extends THREE.Scene {
         // La luz focal, además tiene una posición, y un punto de mira
         // Si no se le da punto de mira, apuntará al (0,0,0) en coordenadas del mundo
         // En este caso se declara como   this.atributo   para que sea un atributo accesible desde otros métodos.
-        this.spotLight = new THREE.SpotLight(0xffffff);
-        this.spotLight.position.set(60, 60, 40);
-        this.add(this.spotLight);
+        // this.spotLight = new THREE.SpotLight(0xffffff);
+        // this.spotLight.position.set(60, 60, 40);
+        // this.add(this.spotLight);
     }
 
     createRenderer(myCanvas) {
@@ -188,14 +183,14 @@ class MyScene extends THREE.Scene {
     }
 
     rellenarEnemigos() {
-        for (var i = 0; i < this.ronda * 3; i++) {
+        for (var i = 0; i < this.ronda * 2; i++) {
             var motobug = new Motobug(this, this.ronda);
             var x = this.ronin.position.x;
             var z = this.ronin.position.z;
             while (x > this.ronin.position.x - 5 && x < this.ronin.position.x + 5 &&
                 z > this.ronin.position.z - 5 && z < this.ronin.position.z + 5) {
-                z = (Math.random() * 100) - 100;
-                x = (Math.random() * 100) - 100;
+                z = Math.floor(-100 + Math.random()*(100 - -100));
+                x =  Math.floor(-100 + Math.random()*(100 - -100));
             }
             motobug.translateX(x);
             motobug.translateZ(z);
@@ -212,8 +207,8 @@ class MyScene extends THREE.Scene {
         mejoraD.scale.set(0.7,0.7,0.7);
         var mejoraV = new MejoraVida(this);
         mejoraV.scale.set(0.7,0.7,0.7);
-        mejoraD.position.set(-30,0, -30)
-        mejoraV.position.set(-30,0, 30)
+        mejoraD.position.set(0,0, -30)
+        mejoraV.position.set(0,0, 30)
         this.premios.push(mejoraD);
         this.premios.push(mejoraV);
         this.add(mejoraD);
@@ -267,7 +262,6 @@ class MyScene extends THREE.Scene {
             }
             if (this.enemigosMuertos.length === this.enemigos.length && this.enemigos.length > 0 && this.enemigosMuertos.length > 0){
                 if (this.tocaPremio){    
-                    console.log(`Toca premio: ${this.tocaPremio}`)
                     this.premioRonda();
                 }
             }
@@ -339,6 +333,17 @@ class MyScene extends THREE.Scene {
     }
 
 
+    createCube() {
+        var path = "../imgs/cubemap/";
+        var format = '.png';
+        var urls = [
+            path + 'px' + format, path + 'nx' + format,
+            path + 'py' + format, path + 'ny' + format,
+            path + 'pz' + format, path + 'nz' + format
+        ];
+        var textureCube = new THREE.CubeTextureLoader().load(urls);
+        this.background = textureCube;
+    }
 }
 
 /// La función   main

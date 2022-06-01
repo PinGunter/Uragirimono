@@ -9,17 +9,18 @@ class Flecha extends THREE.Object3D {
         // primero modelamos la flecha
         var cuerpoGeo = new THREE.CylinderGeometry(0.5, 0.5, 7, 8);
         cuerpoGeo.rotateZ(Math.PI / 2);
+        cuerpoGeo.translate(0, 10, 0);
         var matCuerpo = new THREE.MeshStandardMaterial({ color: 0x362b1f });
         this.cuerpo = new THREE.Mesh(cuerpoGeo, matCuerpo);
 
         // ahora la cola
         var colaGeo1 = new THREE.ConeGeometry(2, 3, 2);
         colaGeo1.rotateZ(-Math.PI / 2);
-        colaGeo1.translate(-5, 0, 0);
+        colaGeo1.translate(-5, 10, 0);
         var colaGeo2 = new THREE.ConeGeometry(2, 3, 2);
         colaGeo2.rotateZ(-Math.PI / 2);
         colaGeo2.rotateX(-Math.PI / 2);
-        colaGeo2.translate(-5, 0, 0);
+        colaGeo2.translate(-5, 10, 0);
         var colaMat = new THREE.MeshToonMaterial({ color: "red" });
         var c1 = new THREE.Mesh(colaGeo1, colaMat);
         var c2 = new THREE.Mesh(colaGeo2, colaMat);
@@ -36,7 +37,7 @@ class Flecha extends THREE.Object3D {
 
         var puntaGeo = new THREE.ExtrudeGeometry(puntaShape, { depth: 0.2 });
         puntaGeo.rotateZ(-Math.PI / 2);
-        puntaGeo.translate(3.5, 0, 0);
+        puntaGeo.translate(3.5, 10, 0);
         var puntaMat = new THREE.MeshStandardMaterial({ color: "white", metalness: 0.8, roughness: 0.5 });
         this.punta = new THREE.Mesh(puntaGeo, puntaMat);
 
@@ -69,10 +70,8 @@ class Flecha extends THREE.Object3D {
 
     }
 
-    // TODO: ajustar destino cuando haya colisiones de mapa, pasarle el punto de colision de la pared.
     // podrá atacar a hasta 3 enemigos por flecha, sino sería demasiad poderoso
     disparar(posicion, destino, angulo) {
-
         var hitsEnemigos = 0;
 
         var origenE = { e: 0 };
@@ -106,11 +105,16 @@ class Flecha extends THREE.Object3D {
             }
             )
 
-
         var origen = { x: posicion.x, z: posicion.z };
-        var desti = { x: (posicion.x + destino.x), z: (posicion.z + destino.z) };
+        var desti = { x: destino.x, z: destino.z };
+        console.log(`disparando desde [${origen.x},${origen.z}] hacia [${desti.x},${desti.z}]`);
+        var v_o = new THREE.Vector2(origen.x, origen.z);
+        var v_d = new THREE.Vector2(desti.x, desti.z);
+        var espacio =  v_o.distanceTo(v_d) * 1000;
+        var tiempo = espacio / 150;
+        console.log(`Espacio: ${espacio} | Tiempo: ${tiempo}`);
         var moverse = new TWEEN.Tween(origen)
-            .to(desti, 1000)
+            .to(desti, tiempo)
             .onStart(() => {
                 console.log("disparando");
                 // console.log(this.rotation.y);
