@@ -5,8 +5,8 @@ import * as TWEEN from '../libs/tween.esm.js';
 
 
 class Motobug extends Enemigo {
-    constructor(escena, vidas) {
-        super(escena, vidas);
+    constructor(escena, vidas, bordes) {
+        super(escena, vidas, bordes);
 
         this.geometrias = [];
         this.materiales = [];
@@ -252,7 +252,7 @@ class Motobug extends Enemigo {
         var origen = { p: 0 };
         var destino = { p: 1 };
         var movimientoIda = new TWEEN.Tween(origen)
-            .to(destino, Math.random() * 10000 + 10000)
+            .to(destino, Math.random() * 10000 + 15000)
             .onStart(() => {
                 posOrigen.copy(this.position);
             })
@@ -279,6 +279,17 @@ class Motobug extends Enemigo {
         this.velocidadRueda = 0;
     }
 
+    interseccionBorde(borde){
+        var vectorEntreObj = new THREE.Vector2();
+        var v_caja = new THREE.Vector3();
+        var v_borde = new THREE.Vector3();
+        borde.getWorldPosition(v_borde);
+        this.caja.getWorldPosition(v_caja);
+        vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
+            new THREE.Vector2(v_borde.x, v_borde.z));
+        return (vectorEntreObj.length() < 10); // se puede revisar
+}
+    
     update() {
         this.rueda.rotation.z -= this.velocidadRueda;
     }

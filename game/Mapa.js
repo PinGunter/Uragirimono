@@ -4,6 +4,8 @@ import {Columna} from './Columna.js';
 class Mapa extends THREE.Object3D{
     constructor() {
         super();
+        this.hitboxes = [];
+
         var texturaPared = new THREE.TextureLoader().load('../imgs/pared.jpg');
         texturaPared.wrapS = THREE.RepeatWrapping;
         texturaPared.repeat.set(6,1);
@@ -15,12 +17,12 @@ class Mapa extends THREE.Object3D{
         this.paredL = new THREE.Mesh(paredLgeo, materialPared);
         this.add(this.paredL);
 
-        var hitboxMat = new THREE.MeshStandardMaterial({color: 0xff0000, transparent: true, opacity: 0})
+        var hitboxMat = new THREE.MeshStandardMaterial({color: 0xff0000, transparent: true, opacity: 0.8})
 
         var cajaLgeo = new THREE.BoxGeometry(5,10,200);
-        cajaLgeo.translate(-100,4,0)
         this.cajaL = new THREE.Mesh(cajaLgeo, hitboxMat);
         this.cajaL.name = "paredL"
+        this.cajaL.position.set(-100,4,0)
         this.add(this.cajaL);
 
         var paredRgeo = new THREE.BoxGeometry(1,10,200);
@@ -29,30 +31,34 @@ class Mapa extends THREE.Object3D{
         this.add(this.paredR)
 
         var cajaRgeo = new THREE.BoxGeometry(5,10,200);
-        cajaRgeo.translate(100,4,0)
         this.cajaR = new THREE.Mesh(cajaRgeo, hitboxMat);
+        this.cajaR.position.set(100,4,0)
         this.cajaR.name = "paredR";
         this.add(this.cajaR);
 
-        var paredTgeo = new THREE.BoxGeometry(200,10,1);
+        var paredTgeo = new THREE.BoxGeometry(1,10,200);
+        paredTgeo.rotateY(Math.PI/2);   
         paredTgeo.translate(0,4,100);
         this.paredT = new THREE.Mesh(paredTgeo, materialPared);
         this.add(this.paredT);
 
-        var cajaTgeo = new THREE.BoxGeometry(200,10,5);
-        cajaTgeo.translate(0,4,100)
+        var cajaTgeo = new THREE.BoxGeometry(5,10,200);
+        cajaTgeo.rotateY(Math.PI/2);
         this.cajaT = new THREE.Mesh(cajaTgeo, hitboxMat);
         this.cajaT.name = "paredT";
+        this.cajaT.position.set(0,4,100)
         this.add(this.cajaT);
 
-        var paredBgeo = new THREE.BoxGeometry(200,10,1);
+        var paredBgeo = new THREE.BoxGeometry(1,10,200);
+        paredBgeo.rotateY(Math.PI/2);
         paredBgeo.translate(0,4,-100);
         this.paredB = new THREE.Mesh(paredBgeo, materialPared);
         this.add(this.paredB);
 
-        var cajaBgeo = new THREE.BoxGeometry(200,10,5);
-        cajaBgeo.translate(0,4,-100)
+        var cajaBgeo = new THREE.BoxGeometry(5,10,200);
+        cajaBgeo.rotateY(Math.PI/2);
         this.cajaB = new THREE.Mesh(cajaBgeo, hitboxMat);
+        this.cajaB.position.set(0,4,-100)
         this.cajaB.name = "paredB";
         this.add(this.cajaB);
 
@@ -102,7 +108,6 @@ class Mapa extends THREE.Object3D{
         this.add(c6);
         this.columnas.push(c6);
 
-        this.hitboxes = [];
         this.hitboxes.push(this.cajaL);
         this.hitboxes.push(this.cajaR);
         this.hitboxes.push(this.cajaT);

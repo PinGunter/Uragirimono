@@ -2,11 +2,12 @@ import * as THREE from '../libs/three.module.js';
 import * as TWEEN from '../libs/tween.esm.js';
 
 class Enemigo extends THREE.Object3D {
-    constructor(escena, vidas) {
+    constructor(escena, vidas, bordes) {
         super();
         this.escena = escena;
         this.vidasTotales = vidas;
         this.vidasActuales = this.vidasTotales;
+        this.borders = bordes;
 
         // barra de vida
         this.barraVida = [];

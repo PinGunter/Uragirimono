@@ -29,6 +29,8 @@ class Ronin extends THREE.Object3D {
         this.rondaActual = 1;
         this.danio = 1;
 
+        this.oldPosition = new THREE.Vector3(0,0,0);
+
         this.ronin = new THREE.Object3D(); // el personaje en sí
 
         this.roninWrap = new THREE.Object3D();
@@ -387,6 +389,21 @@ class Ronin extends THREE.Object3D {
         }
     }
 
+    interseccionBorde(borde){
+        if (this.ready) {
+            var vectorEntreObj = new THREE.Vector2();
+            var v_caja = new THREE.Vector3();
+            var v_borde = new THREE.Vector3();
+            borde.getWorldPosition(v_borde);
+            this.caja.getWorldPosition(v_caja);
+            vectorEntreObj.subVectors(new THREE.Vector2(v_caja.x, v_caja.z),
+                new THREE.Vector2(v_borde.x, v_borde.z));
+            console.log(`Distancia con ${borde.name}: ${vectorEntreObj.length()}`);
+            console.log(`Ancho de borde ${borde.name}: ${borde.geometry.parameters.width}`)
+            return (vectorEntreObj.length() < borde.geometry.parameters.width); // se puede revisar
+        }
+    }
+
     quitarVida() {
         if (this.vidas > 0 && !(this.actions["recibeGolpe"].isRunning() || this.actions["morir"].isRunning())) {
             this.vidas -= 1;
@@ -447,6 +464,15 @@ class Ronin extends THREE.Object3D {
             if (direccion) {
                 this.moverPersonaje(teclasPulsadas, camara, delta);
             }
+
+            this.borders.forEach(borde => {
+                if (this.interseccionBorde(borde)) {
+                    this.newX = this.oldPosition.x;
+                    this.newZ = this.oldPosition.z;
+                }
+            })
+
+            this.oldPosition = this.roninWrap.position.clone();
             this.roninWrap.position.x = this.newX;
             this.roninWrap.position.z = this.newZ;
 
