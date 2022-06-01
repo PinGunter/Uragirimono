@@ -8,6 +8,14 @@ class Mejora extends THREE.Object3D {
         this.mejoraAplicada = false;
         this.geometrias = [];
         this.materiales = [];
+
+        this.target = new THREE.Object3D();
+        this.target.position.set(0,0,0);
+        this.add(this.target);
+        this.spotlight = new THREE.SpotLight(0xffffff, 0.5, 20);
+        this.spotlight.position.set(0, 20, 0);
+        this.spotlight.target = this.target;
+        this.add(this.spotlight)
     }
 
     animar() {
@@ -48,6 +56,7 @@ class Mejora extends THREE.Object3D {
     mejoroVida() { return false; }
 
     mejoroAtaque() { return false; }
+
 }
 
 export {Mejora};

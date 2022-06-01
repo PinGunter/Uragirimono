@@ -111,6 +111,24 @@ class Mapa extends THREE.Object3D{
             this.hitboxes.push(c.col);
         })
 
+        // luces
+        this.luz1 = new THREE.PointLight(0xf2870c, 1, 40);
+        this.luz1.position.set(-99,8,0);
+
+        this.luz2 = new THREE.PointLight(0xf2870c, 1, 40);
+        this.luz2.position.set(99,8,0);
+
+        this.luz3 = new THREE.PointLight(0xf2870c, 1, 40);
+        this.luz3.position.set(0,8,99);
+
+        this.luz4 = new THREE.PointLight(0xf2870c, 1, 40);
+        this.luz4.position.set(0,8,-99);
+
+        this.add(this.luz1);
+        this.add(this.luz2);
+        this.add(this.luz3);
+        this.add(this.luz4);
+
 
     }
 }

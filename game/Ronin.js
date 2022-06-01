@@ -77,6 +77,11 @@ class Ronin extends THREE.Object3D {
         // this.katana.position.set(-4, 5, 4); // posicion de ataque
         this.restaurarKatana();
         this.ronin.add(this.katanaWrap);
+
+        // luz que acompaña
+        this.luz = new THREE.PointLight(0xc29627, 0.6, 20);
+        this.luz.position.set(0,10,0);
+        this.roninWrap.add(this.luz);
     }
 
     loadModel() {
@@ -339,7 +344,6 @@ class Ronin extends THREE.Object3D {
                 direccion = direccion.normalize();
                 raycaster.set(posicionGlobalRonin, direccion);
                 var intersects = raycaster.intersectObjects(this.borders);
-                console.log(intersects);
                 var objetivo = intersects[0].point;
                 var angulo = Math.atan2((objetivo.x - posicionGlobalRonin.x), (objetivo.z - posicionGlobalRonin.z));
                 var flecha = new Flecha(this, this.escena.enemigos);
