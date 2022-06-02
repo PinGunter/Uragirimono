@@ -11,6 +11,7 @@ class Motobug extends Enemigo {
         this.ultimaPosicion = new THREE.Vector3(20, 0, 0);
         this.geometrias = [];
         this.materiales = [];
+        this.escaladoOriginal = 0.5;
         this.figura = new THREE.Object3D();
         // la rueda
         var ruedaGeo = new THREE.TorusGeometry(5, 2.75, 16, 15);
@@ -239,45 +240,89 @@ class Motobug extends Enemigo {
 
 
         // movimiento
-        var curva = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-        ], true);
+        this.tocaNuevaRuta = false;
+        this.movimiento = new TWEEN.Tween();
+        this.generarNuevaRuta();
 
-        var posOrigen = new THREE.Vector3(0, 0, 0);
+
+    }
+
+    generarNuevaRuta() {
+        var puntos = [
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+        ]
+
+        var ruta = new THREE.CatmullRomCurve3(puntos, true);
+        var escalado = this.escaladoOriginal;
+        console.log(this.escaladoOriginal)
+        var oEscDes = { e: escalado };
+        var dEscDes = { e: 0 };
+        var desaparece = new TWEEN.Tween(oEscDes)
+            .to(dEscDes, 500)
+            .onUpdate(() => {
+                this.scale.set(oEscDes.e, oEscDes.e, oEscDes.e);
+                console.log(`${this.identificador}::`+"me hago chiquito: ", oEscDes.e)
+                this.figura.rotation.y += 0.1;
+            })
+
+        var oEscApa = { e: 0 };
+        var dEscApa = { e: this.escaladoOriginal };
+        var aparece = new TWEEN.Tween(oEscApa)
+            .to(dEscApa, 500)
+            .onStart(() => {
+                this.position.copy(puntos[0]);
+            })
+            .onUpdate(() => {
+                console.log(`${this.identificador}::`+"me hago grande: ", oEscApa.e)
+                this.scale.set(oEscApa.e, oEscApa.e, oEscApa.e);
+                this.figura.rotation.y += 0.1;
+            })
+            .onComplete(() => {
+                this.figura.rotation.y = -Math.PI/2;
+            })
+
 
         var origen = { p: 0 };
         var destino = { p: 1 };
-        var movimientoIda = new TWEEN.Tween(origen)
+
+        this.movimiento = new TWEEN.Tween(origen)
             .to(destino, Math.random() * 10000 + 15000)
             .onStart(() => {
-                posOrigen.copy(this.position);
+                this.tocaNuevaRuta = false;
             })
-            .easing(TWEEN.Easing.Linear.None)
-            .onUpdate(() => {
-                if (!this.estoyMuerto()) {
-                    var t = origen.p;
-                    var posicion = curva.getPointAt(t);
-                    this.position.copy(posicion);
-                    console.log(`${this.identificador} :: posicion antes de colision: ${this.position.x}, ${this.position.z}`);
-                    for (var i = 0; i < this.borders.length; i++) {
-                        var borde = this.borders[i];
-                        if (this.interseccionBorde(borde)) {
-                            this.position.copy(this.ultimaPosicion);
-                            console.log(`${this.identificador} :: COLISION, posicion despues: ${this.position.x}, ${this.position.z}`);
-                        } 
+            .easing(TWEEN.Easing.Linear.None);
+
+        this.movimiento.onUpdate(() => {
+            if (!this.estoyMuerto()) {
+                var t = origen.p;
+                var posicion = ruta.getPointAt(t);
+                this.position.copy(posicion);
+                for (var i = 0; i < this.borders.length && !this.tocaNuevaRuta; i++) {
+                    var borde = this.borders[i];
+                    if (this.interseccionBorde(borde)) {
+                        this.position.copy(this.ultimaPosicion);
+                        this.tocaNuevaRuta = true;
                     }
+                }
+                if (!this.tocaNuevaRuta) {
                     this.ultimaPosicion.copy(this.position);
-                    var tangente = curva.getTangentAt(t);
+                    var tangente = ruta.getTangentAt(t);
                     posicion.add(tangente);
                     this.lookAt(posicion);
                 }
+            }
+        })
+            .onComplete(() => {
+                this.tocaNuevaRuta = true;
             })
-            .repeat(Infinity)
-            .start();
+
+        desaparece.chain(aparece);
+        aparece.chain(this.movimiento);
+        desaparece.start();
     }
 
     rng(min, max) {
@@ -306,6 +351,12 @@ class Motobug extends Enemigo {
 
     update() {
         this.rueda.rotation.z -= this.velocidadRueda;
+        if (this.tocaNuevaRuta) {
+            this.movimiento.stop();
+            console.log(`${this.identificador} :: Generando ruta nueva`)
+            this.generarNuevaRuta();
+            this.tocaNuevaRuta = false;
+        }
     }
 }
 
