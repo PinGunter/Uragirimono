@@ -186,7 +186,7 @@ class MyScene extends THREE.Scene {
     }
 
     rellenarEnemigos() {
-        for (var i = 0; i < this.ronda * 2; i++) {
+        for (var i = 0; i < this.ronda * 1.5; i++) {
             var wrapper = new THREE.Object3D();
             var motobug = new Motobug(this, this.ronda, this.mapa.hitboxes, i);
             var x = this.ronin.position.x;
