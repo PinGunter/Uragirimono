@@ -12,7 +12,6 @@ import { Motobug } from './Motobug.js'
 import { MejoraDanio } from './MejoraDanio.js'
 import { MejoraVida } from './MejoraVida.js'
 import { Mapa } from './Mapa.js'
-import { Canion } from './Canion.js'
 /// La clase fachada del modelo
 /**
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
@@ -51,15 +50,13 @@ class MyScene extends THREE.Scene {
         this.clock = new THREE.Clock();
         this.teclasPulsadas = {};
         this.ronin = new Ronin(this.camera, this, this.mapa.hitboxes, 100);
-        this.canion = new Canion(this,3, this.ronin);
-        this.add(this.ronin);
-        this.add(this.canion);
         this.enemigos = [];
         this.enemigosMuertos = [];
         this.tocaPremio = true;
         this.premios = [];
         this.finPremio = false;
         if (!this.debug) {
+            this.add(this.ronin)
             var vidas = "";
             for (var i = 0; i < this.ronin.vidas; i++) {
                 vidas += "❤️";
@@ -326,11 +323,11 @@ class MyScene extends THREE.Scene {
     }
 
     pulsarTecla(evento) {
-        this.teclasPulsadas[evento.key] = true;
+        this.teclasPulsadas[evento.key.toLowerCase()] = true;
     }
 
     levantarTecla(evento) {
-        this.teclasPulsadas[evento.key] = false;
+        this.teclasPulsadas[evento.key.toLowerCase()] = false;
     }
 
     atacarRonin(evento) {
@@ -361,7 +358,7 @@ $(function () {
 
     // Se instancia la escena pasándole el  div  que se ha creado en el html para visualizar
 
-    var scene = new MyScene("#WebGL-output", true);
+    var scene = new MyScene("#WebGL-output", false);
 
     // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
     window.addEventListener("resize", () => scene.onWindowResize());

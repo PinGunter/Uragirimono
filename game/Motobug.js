@@ -249,11 +249,11 @@ class Motobug extends Enemigo {
 
     generarNuevaRuta() {
         var puntos = [
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
-            new THREE.Vector3(this.rng(-90, 90), 3.75, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 2, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 2, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 2, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 2, this.rng(-90, 90)),
+            new THREE.Vector3(this.rng(-90, 90), 2, this.rng(-90, 90)),
         ]
 
         var ruta = new THREE.CatmullRomCurve3(puntos, true);

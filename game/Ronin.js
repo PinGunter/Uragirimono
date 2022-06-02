@@ -253,7 +253,7 @@ class Ronin extends THREE.Object3D {
         this.katanaWrap.rotation.y = this.katanaWrap.rotation.x = this.katanaWrap.rotation.z = 0;
     }
 
-    atacar(evento) {
+    atacar() {
         if (!this.actions['morir'].isRunning() && this.vidas > 0) {
             this.katana.detenerAnimacion = true;
             this.fadeToAction("ataque", 1);
