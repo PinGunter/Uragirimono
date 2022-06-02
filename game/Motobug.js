@@ -265,7 +265,7 @@ class Motobug extends Enemigo {
             .to(dEscDes, 500)
             .onUpdate(() => {
                 this.scale.set(oEscDes.e, oEscDes.e, oEscDes.e);
-                console.log(`${this.identificador}::`+"me hago chiquito: ", oEscDes.e)
+                console.log(`${this.identificador}::` + "me hago chiquito: ", oEscDes.e)
                 this.figura.rotation.y += 0.1;
             })
 
@@ -277,12 +277,12 @@ class Motobug extends Enemigo {
                 this.position.copy(puntos[0]);
             })
             .onUpdate(() => {
-                console.log(`${this.identificador}::`+"me hago grande: ", oEscApa.e)
+                console.log(`${this.identificador}::` + "me hago grande: ", oEscApa.e)
                 this.scale.set(oEscApa.e, oEscApa.e, oEscApa.e);
                 this.figura.rotation.y += 0.1;
             })
             .onComplete(() => {
-                this.figura.rotation.y = -Math.PI/2;
+                this.figura.rotation.y = -Math.PI / 2;
             })
 
 
@@ -350,12 +350,14 @@ class Motobug extends Enemigo {
     }
 
     update() {
-        this.rueda.rotation.z -= this.velocidadRueda;
-        if (this.tocaNuevaRuta) {
-            this.movimiento.stop();
-            console.log(`${this.identificador} :: Generando ruta nueva`)
-            this.generarNuevaRuta();
-            this.tocaNuevaRuta = false;
+        if (!this.estoyMuerto()) {
+            this.rueda.rotation.z -= this.velocidadRueda;
+            if (this.tocaNuevaRuta) {
+                this.movimiento.stop();
+                console.log(`${this.identificador} :: Generando ruta nueva`)
+                this.generarNuevaRuta();
+                this.tocaNuevaRuta = false;
+            }
         }
     }
 }
