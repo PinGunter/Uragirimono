@@ -60,7 +60,7 @@ class Enemigo extends THREE.Object3D {
                     console.log("eliminando material")
                     mat.dispose();
                 });
-                this.escena.remove(this);
+                this.removeFromParent();
             })
 
         rotacion.chain(desaparece);
