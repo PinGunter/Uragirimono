@@ -9,6 +9,9 @@ class Enemigo extends THREE.Object3D {
         this.vidasActuales = this.vidasTotales;
         this.borders = bordes;
 
+        this.geometrias = [];
+        this.materiales = [];
+
         // barra de vida
         this.barraVida = [];
         for (var i = -this.vidasTotales / 2 + 0.5; i < this.vidasTotales / 2 + 0.5; i++) {
@@ -49,6 +52,14 @@ class Enemigo extends THREE.Object3D {
             .onComplete(() => {
                 this.vidasActuales = 0;
                 console.log("me borro");
+                this.geometrias.forEach(geo => {
+                    console.log("eliminando geometria")
+                    geo.dispose();
+                });
+                this.materiales.forEach(mat => {
+                    console.log("eliminando material")
+                    mat.dispose();
+                });
                 this.escena.remove(this);
             })
 
